@@ -1,7 +1,7 @@
 ---
 name: openclaw-configure
 description: "Expert-level OpenClaw CLI configuration skill. Covers channels, models, plugins, gateway, agents, hooks, cron, security, sandbox, memory, browser, nodes, DNS, webhooks, approvals, and more. Self-evolving: updates itself after learning new patterns."
-version: 1.2.0
+version: 1.3.0
 author: zanearcher
 category: infrastructure
 ---
@@ -14,8 +14,10 @@ Configure any aspect of OpenClaw via CLI. Battle-tested from real setup sessions
 
 **Reference files** (same directory as this skill):
 - `commands.md` — condensed CLI reference, all 25 domains
-- `cli-reference.md` — full `--help` for 142 commands
+- `cli-reference.md` — full `--help` for 142+ commands
 - `oauth2-setup.md` — OAuth2 model setup guide
+
+**IMPORTANT — Auto-Update Check:** Before answering any OpenClaw question, Claude MUST run the **Version Check Protocol** (see bottom of this file) to detect if a newer OpenClaw version is installed than what this skill documents. If yes, refresh the skill files first.
 
 ---
 
@@ -65,11 +67,18 @@ telegram, whatsapp, discord, irc, googlechat, slack, signal, imessage, feishu, n
 
 ### Channel-Specific Notes
 
-**Telegram:** Bot token from @BotFather. `--token <token>`. Default dmPolicy: "pairing" (users /start then get approved). Streaming: `streamMode: "partial"`. Plugin: `telegram`.
+**Telegram:** Bot token from @BotFather. `--token <token>`. Default dmPolicy: "pairing" (users /start then get approved). Streaming: `channels.telegram.streaming: true` (simplified in v2026.2.21). Lifecycle status reactions: configurable emoji for queued/thinking/tool/done/error phases. Plugin: `telegram`.
 
 **WhatsApp:** `openclaw channels login --channel whatsapp` (QR code). dmPolicy: "allowlist" with E.164 numbers. `selfChatMode: true` for self-messaging. Plugin: `whatsapp`.
 
 **Discord:** Bot token from Developer Portal. `--token <token>`. Configure guild/channel access in `channels.discord.guilds`. Plugin: `discord`.
+- **Stream preview mode** (v2026.2.21): Live draft replies with `partial` or `block` options, configurable chunking
+- **Lifecycle status reactions**: Configurable emoji feedback during agent processing (queued/thinking/tool/done/error phases)
+- **Voice channels**: Join/leave/status via `/vc`, auto-join for realtime voice conversations
+- **Ephemeral defaults**: Configurable ephemeral responses for slash commands
+- **Forum tag management**: `available_tags` editing
+- **Channel topics**: Included in trusted inbound metadata
+- **Thread-bound subagents**: Per-thread sessions with focus/list controls
 
 **iMessage:** Uses `imsg` CLI. `--cli-path imsg`. dmPolicy: "allowlist". Plugin: `imessage`.
 
@@ -78,6 +87,24 @@ telegram, whatsapp, discord, irc, googlechat, slack, signal, imessage, feishu, n
 **Matrix:** `--homeserver <url> --user-id <id> --password <pw>` or `--access-token`. Plugin: `matrix`.
 
 **Slack:** `--bot-token <xoxb-...> --app-token <xapp-...>`. Plugin: `slack`.
+
+### Per-Channel Model Overrides (v2026.2.21+)
+
+Route different models to different channels via `channels.modelByChannel`:
+```json
+"channels": {
+  "modelByChannel": {
+    "discord": "anthropic/claude-opus-4-6",
+    "telegram": "google/gemini-3.1-pro-preview",
+    "whatsapp": "openai/gpt-5.3-codex"
+  }
+}
+```
+This overrides the default model on a per-channel basis without needing separate agents.
+
+### Per-Account defaultTo Routing (v2026.2.21+)
+
+Set outbound routing fallback per account: `channels.<ch>.accounts.<id>.defaultTo` for `openclaw agent --deliver`.
 
 ### Channel Commands
 ```
@@ -159,7 +186,16 @@ channels logs         --channel <name> --lines <n> --json
 - Install: `npm install -g @google/gemini-cli`
 - Enable: `openclaw plugins enable google-gemini-cli-auth`
 - Run: `openclaw configure` -> Google -> "Google Gemini CLI Auth"
-- Models: Gemini 3 Pro, Gemini 3 Flash (~1M context)
+- Models: Gemini 3 Pro, Gemini 3 Flash (~1M context), Gemini 3.1 Pro Preview (v2026.2.21+)
+
+**Volcano Engine / Doubao (v2026.2.21+):**
+- Run: `openclaw configure` -> Volcano Engine -> follow onboarding auth flow
+- Models: Doubao series
+- api: `"openai-completions"` (OpenAI-compatible)
+
+**BytePlus (v2026.2.21+):**
+- Run: `openclaw configure` -> BytePlus -> follow onboarding auth flow
+- api: `"openai-completions"` (OpenAI-compatible)
 
 **MiniMax Portal (free OAuth):**
 - Enable: `openclaw plugins enable minimax-portal-auth`
@@ -332,9 +368,13 @@ agents set-identity                      Update name/theme/emoji/avatar
     "model": {"primary":"anthropic/claude-opus-4-6"},
     "models": {"<provider/model>": {"alias":"opus"}},
     "workspace": "~/.openclaw/workspace",
-    "compaction": {"mode":"safeguard"},
+    "compaction": {
+      "mode": "safeguard",
+      "reserveTokens": 4096,
+      "keepRecentTokens": 8192
+    },
     "maxConcurrent": 4,
-    "subagents": {"maxConcurrent": 8}
+    "subagents": {"maxConcurrent": 8, "maxSpawnDepth": 2}
   }
 }
 ```
@@ -543,6 +583,17 @@ security audit [--deep] [--fix] [--json] Audit config + state
 ```
 Best practices: `chmod 700 ~/.openclaw`, bind gateway to loopback, use allowlist/pairing dmPolicy, restrict node commands with denyCommands.
 
+### Security Hardening (v2026.2.21+)
+Major security overhaul with 40+ fixes:
+- Owner-ID obfuscation uses dedicated HMAC secret (decoupled from gateway token)
+- SHA-256 replaces SHA-1 for gateway lock and tool-call synthetic IDs
+- Heredoc substitution allowlist bypass blocked
+- Shell startup-file env injection blocked (`BASH_ENV`, `ENV`, `BASH_FUNC_*`, `LD_*`, `DYLD_*`)
+- Browser local file reads via `file:`, `data:`, `javascript:` protocols blocked
+- ACP resource link prompt injection prevention
+- TTS model-driven provider switching now opt-in by default
+- Sandbox browser containers default to dedicated Docker network
+
 ---
 
 ## Sandbox
@@ -565,6 +616,15 @@ memory index [--force]                    Reindex files
 memory status [--json]                    Index status
 ```
 Requires embedding provider (OpenAI/Gemini key or local). Plugin: memory-core (default), memory-lancedb (advanced).
+
+### QMD Improvements (v2026.2.21+)
+- Per-agent enable/disable for QMD
+- Per-collection search splitting for targeted queries
+- Boot retry on transient embedding/provider failures
+- BM25-only mode support (no embedding provider needed)
+- Global embed serialization (prevents parallel embed races)
+- Mixed-source search ranking diversification (session transcripts no longer crowd out memory files)
+- Explicit `unavailable` warnings from `memory_search` on embedding/provider failures
 
 ---
 
@@ -758,3 +818,76 @@ After completing any OpenClaw task that involved:
 - Keep concise and well-organized
 
 This skill grows with every use. Never let hard-won knowledge be lost.
+
+---
+
+## Version Check & Auto-Update Protocol
+
+**This skill was last updated for:** `v2026.2.21-2`
+
+### Version Check (MANDATORY — run at start of every OpenClaw session)
+
+Before answering any OpenClaw question, Claude MUST:
+
+```bash
+# 1. Get installed version
+INSTALLED=$(openclaw --version 2>&1 | head -1)
+
+# 2. Check what this skill documents
+SKILL_VERSION="v2026.2.21-2"
+```
+
+Compare the installed version against `SKILL_VERSION` above. If the installed version is NEWER than the skill version, trigger the **Skill Refresh** procedure below.
+
+If the versions match, proceed normally — no refresh needed.
+
+### Skill Refresh Procedure
+
+When a newer OpenClaw version is detected:
+
+1. **Notify the user:** "OpenClaw updated to vX.X.X — refreshing skill knowledge..."
+
+2. **Regenerate `cli-reference.md`:**
+   ```bash
+   # Capture top-level help
+   openclaw --help > /tmp/oc-help.txt
+
+   # For each command with subcommands (*), capture subcommand help too
+   for cmd in acp agents approvals browser channels config cron devices directory dns gateway hooks memory message models node nodes pairing plugins sandbox security skills system update webhooks; do
+     openclaw $cmd --help >> /tmp/oc-help.txt 2>/dev/null
+   done
+   ```
+   Then write the formatted output to `~/.claude/skills/openclaw-configure/cli-reference.md`.
+
+3. **Update `commands.md`:**
+   - Update the version header line
+   - Add any new commands or flags discovered from the help output
+   - Remove any commands that no longer exist
+
+4. **Check the CHANGELOG:**
+   ```bash
+   # The changelog lives in the npm package directory
+   CHANGELOG_PATH=$(dirname $(which openclaw))/../lib/node_modules/openclaw/CHANGELOG.md
+   # Read the section between the new version and the skill's old version
+   ```
+   Use the changelog to identify:
+   - New features, channels, or providers to add to SKILL.md
+   - Breaking changes or renamed commands
+   - New config paths or options
+   - Security changes
+
+5. **Update this SKILL.md:**
+   - Update `SKILL_VERSION` in the Version Check section above to the new version
+   - Add new features/channels/providers to appropriate sections
+   - Update troubleshooting table if needed
+   - Bump the `version:` in the YAML frontmatter
+
+6. **Confirm:** "Skill refreshed for vX.X.X. Ready."
+
+### Checking for Available Updates (not yet installed)
+
+To check if a newer version is available upstream (without installing):
+```bash
+openclaw update status --json
+```
+The `registry.latestVersion` field shows the latest published version. If newer than installed, inform the user they can upgrade with `openclaw update --yes`.

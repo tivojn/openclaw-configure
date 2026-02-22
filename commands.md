@@ -1,6 +1,6 @@
 # OpenClaw CLI Commands (Condensed Reference)
 
-Generated from openclaw v2026.2.19-2. One line per command, key flags only.
+Generated from openclaw v2026.2.21-2. One line per command, key flags only.
 
 ---
 
@@ -66,7 +66,7 @@ gateway usage-cost    Fetch usage cost summary from session logs.
 
 ```
 config get            Get a config value by dot path. <path> --json
-config set            Set a config value by dot path. <path> <value> --json
+config set            Set a config value by dot path. <path> <value> --json --strict-json
 config unset          Remove a config value by dot path. <path>
 configure             Interactive setup wizard. --section <workspace|model|web|gateway|daemon|channels|skills|health>
 ```
@@ -318,7 +318,7 @@ logs                  Tail gateway file logs via RPC. --follow --limit <n> --jso
 dashboard             Open the Control UI with your current token. --no-open
 tui                   Open a terminal UI connected to the Gateway. --session <key> --deliver --thinking <level> --token <token> --url <url>
 sessions              List stored conversation sessions. --active <minutes> --json --verbose
-agent                 Run one agent turn via the Gateway. --to <number> --message <text> --agent <id> --deliver --channel <ch> --thinking <level> --local --json
+agent                 Run one agent turn via the Gateway. --to <number> --message <text> --agent <id> --deliver --channel <ch> --thinking <level> --local --json --timeout <s> --verbose
 onboard               Interactive onboarding wizard. --flow <quickstart|advanced|manual> --mode <local|remote> --non-interactive (many provider key flags)
 setup                 Initialize config and agent workspace. --mode <local|remote> --workspace <dir> --wizard --non-interactive
 reset                 Reset local config/state (keeps CLI). --scope <config|config+creds+sessions|full> --dry-run --yes

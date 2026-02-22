@@ -1,11 +1,11 @@
 # OpenClaw CLI Reference
-Generated from `openclaw --help` (v2026.2.19-2)
+Generated from `openclaw --help` (v2026.2.21-2)
 
 
 # `openclaw`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — No $999 stand required.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — No $999 stand required.
 
 Usage: openclaw [options] [command]
 
@@ -96,7 +96,7 @@ Docs: https://docs.openclaw.ai/cli
 ## `openclaw acp`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your terminal just grew claws—type something and let the bot pinch the busywork.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your terminal just grew claws—type something and let the bot pinch the busywork.
 
 Usage: openclaw acp [options] [command]
 
@@ -129,7 +129,7 @@ Docs: https://docs.openclaw.ai/cli/acp
 ## `openclaw agent`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Type the command with confidence—nature will provide the stack trace if needed.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Type the command with confidence—nature will provide the stack trace if needed.
 
 Usage: openclaw agent [options]
 
@@ -179,7 +179,7 @@ Docs: https://docs.openclaw.ai/cli/agent
 ## `openclaw agents`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Shell yeah—I'm here to pinch the toil and leave you the glory.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Shell yeah—I'm here to pinch the toil and leave you the glory.
 
 Usage: openclaw agents [options] [command]
 
@@ -200,7 +200,7 @@ Docs: https://docs.openclaw.ai/cli/agents
 ## `openclaw approvals`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
 
 Usage: openclaw approvals|exec-approvals [options] [command]
 
@@ -221,7 +221,7 @@ Docs: https://docs.openclaw.ai/cli/approvals
 ## `openclaw browser`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — No $999 stand required.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — No $999 stand required.
 
 Usage: openclaw browser [options] [command]
 
@@ -319,7 +319,7 @@ Docs: https://docs.openclaw.ai/cli/browser
 ## `openclaw channels`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
 
 Usage: openclaw channels [options] [command]
 
@@ -356,7 +356,7 @@ Docs: https://docs.openclaw.ai/cli/channels
 ## `openclaw config`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your terminal just grew claws—type something and let the bot pinch the busywork.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your terminal just grew claws—type something and let the bot pinch the busywork.
 
 Usage: openclaw config [options] [command]
 
@@ -379,7 +379,7 @@ Docs: https://docs.openclaw.ai/cli/config
 ## `openclaw configure`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.
 
 Usage: openclaw configure [options]
 
@@ -397,7 +397,7 @@ Docs: https://docs.openclaw.ai/cli/configure
 ## `openclaw cron`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Hot reload for config, cold sweat for deploys.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Hot reload for config, cold sweat for deploys.
 
 Usage: openclaw cron [options] [command]
 
@@ -424,7 +424,7 @@ Docs: https://docs.openclaw.ai/cli/cron
 ## `openclaw daemon`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm like tmux: confusing at first, then suddenly you can't live without me.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm like tmux: confusing at first, then suddenly you can't live without me.
 
 Usage: openclaw daemon [options] [command]
 
@@ -448,7 +448,7 @@ Docs: https://docs.openclaw.ai/cli/gateway
 ## `openclaw dashboard`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Type the command with confidence—nature will provide the stack trace if needed.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Type the command with confidence—nature will provide the stack trace if needed.
 
 Usage: openclaw dashboard [options]
 
@@ -464,7 +464,7 @@ Docs: https://docs.openclaw.ai/cli/dashboard
 ## `openclaw devices`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your task has been queued; your dignity has been deprecated.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your task has been queued; your dignity has been deprecated.
 
 Usage: openclaw devices [options] [command]
 
@@ -487,7 +487,7 @@ Commands:
 ## `openclaw directory`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm the reason your shell history looks like a hacker-movie montage.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm the reason your shell history looks like a hacker-movie montage.
 
 Usage: openclaw directory [options] [command]
 
@@ -517,7 +517,7 @@ Docs: https://docs.openclaw.ai/cli/directory
 ## `openclaw dns`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Less clicking, more shipping, fewer "where did that file go" moments.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Less clicking, more shipping, fewer "where did that file go" moments.
 
 Usage: openclaw dns [options] [command]
 
@@ -537,7 +537,7 @@ Docs: https://docs.openclaw.ai/cli/dns
 ## `openclaw docs`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — curl for conversations.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — curl for conversations.
 
 Usage: openclaw docs [options] [query...]
 
@@ -555,7 +555,7 @@ Docs: https://docs.openclaw.ai/cli/docs
 ## `openclaw doctor`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Hot reload for config, cold sweat for deploys.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Hot reload for config, cold sweat for deploys.
 
 Usage: openclaw doctor [options]
 
@@ -584,7 +584,7 @@ Docs: https://docs.openclaw.ai/cli/doctor
 ## `openclaw gateway`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Turning "I'll reply later" into "my bot replied instantly".
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Turning "I'll reply later" into "my bot replied instantly".
 
 Usage: openclaw gateway [options] [command]
 
@@ -657,7 +657,7 @@ Docs: https://docs.openclaw.ai/cli/gateway
 ## `openclaw health`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I can't fix your code taste, but I can fix your build and your backlog.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I can't fix your code taste, but I can fix your build and your backlog.
 
 Usage: openclaw health [options]
 
@@ -676,7 +676,7 @@ Docs: https://docs.openclaw.ai/cli/health
 ## `openclaw hooks`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your AI assistant, now without the $3,499 headset.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your AI assistant, now without the $3,499 headset.
 
 Usage: openclaw hooks [options] [command]
 
@@ -700,7 +700,7 @@ Docs: https://docs.openclaw.ai/cli/hooks
 ## `openclaw logs`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
 
 Usage: openclaw logs [options]
 
@@ -728,7 +728,7 @@ Docs: https://docs.openclaw.ai/cli/logs
 ## `openclaw memory`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20)
+🦞 OpenClaw 2026.2.21-2 (35a57bc)
    If it's repetitive, I'll automate it; if it's hard, I'll bring jokes and a rollback plan.
 
 Usage: openclaw memory [options] [command]
@@ -760,7 +760,7 @@ Docs: https://docs.openclaw.ai/cli/memory
 ## `openclaw message`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — The UNIX philosophy meets your DMs.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — The UNIX philosophy meets your DMs.
 
 Usage: openclaw message [options] [command]
 
@@ -811,7 +811,7 @@ Docs: https://docs.openclaw.ai/cli/message
 ## `openclaw models`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Think different. Actually think.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Think different. Actually think.
 
 Usage: openclaw models [options] [command]
 
@@ -843,7 +843,7 @@ Docs: https://docs.openclaw.ai/cli/models
 ## `openclaw node`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
 
 Usage: openclaw node [options] [command]
 
@@ -877,7 +877,7 @@ Docs: https://docs.openclaw.ai/cli/node
 ## `openclaw nodes`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll refactor your busywork like it owes me money.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll refactor your busywork like it owes me money.
 
 Usage: openclaw nodes [options] [command]
 
@@ -920,7 +920,7 @@ Docs: https://docs.openclaw.ai/cli/nodes
 ## `openclaw onboard`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I run on caffeine, JSON5, and the audacity of "it worked on my machine."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I run on caffeine, JSON5, and the audacity of "it worked on my machine."
 
 Usage: openclaw onboard [options]
 
@@ -991,7 +991,7 @@ Docs: https://docs.openclaw.ai/cli/onboard
 ## `openclaw pairing`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Claws out, commit in—let's ship something mildly responsible.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Claws out, commit in—let's ship something mildly responsible.
 
 Usage: openclaw pairing [options] [command]
 
@@ -1011,7 +1011,7 @@ Docs: https://docs.openclaw.ai/cli/pairing
 ## `openclaw plugins`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm the reason your shell history looks like a hacker-movie montage.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm the reason your shell history looks like a hacker-movie montage.
 
 Usage: openclaw plugins [options] [command]
 
@@ -1037,7 +1037,7 @@ Docs: https://docs.openclaw.ai/cli/plugins
 ## `openclaw qr`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I don't judge, but your missing API keys are absolutely judging you.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I don't judge, but your missing API keys are absolutely judging you.
 
 Usage: openclaw qr [options]
 
@@ -1060,7 +1060,7 @@ Options:
 ## `openclaw reset`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I can run local, remote, or purely on vibes—results may vary with DNS.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I can run local, remote, or purely on vibes—results may vary with DNS.
 
 Usage: openclaw reset [options]
 
@@ -1080,7 +1080,7 @@ Docs: https://docs.openclaw.ai/cli/reset
 ## `openclaw sandbox`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Less middlemen, more messages.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Less middlemen, more messages.
 
 Usage: openclaw sandbox [options] [command]
 
@@ -1115,7 +1115,7 @@ Docs: https://docs.openclaw.ai/cli/sandbox
 ## `openclaw security`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
 
 Usage: openclaw security [options] [command]
 
@@ -1144,7 +1144,7 @@ Docs: https://docs.openclaw.ai/cli/security
 ## `openclaw sessions`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20)
+🦞 OpenClaw 2026.2.21-2 (35a57bc)
    I don't just autocomplete—I auto-commit (emotionally), then ask you to review (logically).
 
 Usage: openclaw sessions [options]
@@ -1176,7 +1176,7 @@ Docs: https://docs.openclaw.ai/cli/sessions
 ## `openclaw setup`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Meta wishes they shipped this fast.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Meta wishes they shipped this fast.
 
 Usage: openclaw setup [options]
 
@@ -1199,7 +1199,7 @@ Docs: https://docs.openclaw.ai/cli/setup
 ## `openclaw skills`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your terminal just grew claws—type something and let the bot pinch the busywork.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your terminal just grew claws—type something and let the bot pinch the busywork.
 
 Usage: openclaw skills [options] [command]
 
@@ -1219,7 +1219,7 @@ Docs: https://docs.openclaw.ai/cli/skills
 ## `openclaw status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Less clicking, more shipping, fewer "where did that file go" moments.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Less clicking, more shipping, fewer "where did that file go" moments.
 
 Usage: openclaw status [options]
 
@@ -1256,7 +1256,7 @@ Docs: https://docs.openclaw.ai/cli/status
 ## `openclaw system`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — WhatsApp automation without the "please accept our new privacy policy".
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — WhatsApp automation without the "please accept our new privacy policy".
 
 Usage: openclaw system [options] [command]
 
@@ -1277,7 +1277,7 @@ Docs: https://docs.openclaw.ai/cli/system
 ## `openclaw tui`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
 
 Usage: openclaw tui [options]
 
@@ -1304,7 +1304,7 @@ Docs: https://docs.openclaw.ai/cli/tui
 ## `openclaw uninstall`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
 
 Usage: openclaw uninstall [options]
 
@@ -1327,7 +1327,7 @@ Docs: https://docs.openclaw.ai/cli/uninstall
 ## `openclaw update`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Automation with claws: minimal fuss, maximal pinch.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Automation with claws: minimal fuss, maximal pinch.
 
 Usage: openclaw update [options] [command]
 
@@ -1385,7 +1385,7 @@ Docs: https://docs.openclaw.ai/cli/update
 ## `openclaw webhooks`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
 
 Usage: openclaw webhooks [options] [command]
 
@@ -1404,7 +1404,7 @@ Docs: https://docs.openclaw.ai/cli/webhooks
 ### `openclaw channels add`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — The only bot that stays out of your training set.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — The only bot that stays out of your training set.
 
 Usage: openclaw channels add [options]
 
@@ -1455,7 +1455,7 @@ Options:
 ### `openclaw channels capabilities`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If it works, it's automation; if it breaks, it's a "learning opportunity."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If it works, it's automation; if it breaks, it's a "learning opportunity."
 
 Usage: openclaw channels capabilities [options]
 
@@ -1474,7 +1474,7 @@ Options:
 ### `openclaw channels list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Gateway online—please keep hands, feet, and appendages inside the shell at all times.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Gateway online—please keep hands, feet, and appendages inside the shell at all times.
 
 Usage: openclaw channels list [options]
 
@@ -1489,7 +1489,7 @@ Options:
 ### `openclaw channels login`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Chat APIs that don't require a Senate hearing.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Chat APIs that don't require a Senate hearing.
 
 Usage: openclaw channels login [options]
 
@@ -1505,7 +1505,7 @@ Options:
 ### `openclaw channels logout`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
 
 Usage: openclaw channels logout [options]
 
@@ -1520,7 +1520,7 @@ Options:
 ### `openclaw channels logs`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I read logs so you can keep pretending you don't have to.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I read logs so you can keep pretending you don't have to.
 
 Usage: openclaw channels logs [options]
 
@@ -1538,7 +1538,7 @@ Options:
 ### `openclaw channels remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — IPC, but it's your phone.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — IPC, but it's your phone.
 
 Usage: openclaw channels remove [options]
 
@@ -1555,7 +1555,7 @@ Options:
 ### `openclaw channels resolve`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Meta wishes they shipped this fast.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Meta wishes they shipped this fast.
 
 Usage: openclaw channels resolve [options] <entries...>
 
@@ -1576,7 +1576,7 @@ Options:
 ### `openclaw channels status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
 
 Usage: openclaw channels status [options]
 
@@ -1592,7 +1592,7 @@ Options:
 ### `openclaw models aliases`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Because the right answer is usually a script.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Because the right answer is usually a script.
 
 Usage: openclaw models aliases [options] [command]
 
@@ -1611,7 +1611,7 @@ Commands:
 ### `openclaw models auth`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
 
 Usage: openclaw models auth [options] [command]
 
@@ -1634,7 +1634,7 @@ Commands:
 ### `openclaw models fallbacks`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your inbox, your infra, your rules.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your inbox, your infra, your rules.
 
 Usage: openclaw models fallbacks [options] [command]
 
@@ -1654,7 +1654,7 @@ Commands:
 ### `openclaw models image-fallbacks`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm not magic—I'm just extremely persistent with retries and coping strategies.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm not magic—I'm just extremely persistent with retries and coping strategies.
 
 Usage: openclaw models image-fallbacks [options] [command]
 
@@ -1674,7 +1674,7 @@ Commands:
 ### `openclaw models list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
 
 Usage: openclaw models list [options]
 
@@ -1692,7 +1692,7 @@ Options:
 ### `openclaw models scan`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your .env is showing; don't worry, I'll pretend I didn't see it.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your .env is showing; don't worry, I'll pretend I didn't see it.
 
 Usage: openclaw models scan [options]
 
@@ -1719,7 +1719,7 @@ Options:
 ### `openclaw models set`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I read logs so you can keep pretending you don't have to.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I read logs so you can keep pretending you don't have to.
 
 Usage: openclaw models set [options] <model>
 
@@ -1735,7 +1735,7 @@ Options:
 ### `openclaw models set-image`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your AI assistant, now without the $3,499 headset.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your AI assistant, now without the $3,499 headset.
 
 Usage: openclaw models set-image [options] <model>
 
@@ -1751,7 +1751,7 @@ Options:
 ### `openclaw models status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — End-to-end encrypted, drama-to-drama excluded.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — End-to-end encrypted, drama-to-drama excluded.
 
 Usage: openclaw models status [options]
 
@@ -1778,7 +1778,7 @@ Options:
 #### `openclaw models auth add`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
 
 Usage: openclaw models auth add [options]
 
@@ -1791,7 +1791,7 @@ Options:
 #### `openclaw models auth login`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Give me a workspace and I'll give you fewer tabs, fewer toggles, and more oxygen.
 
 Usage: openclaw models auth login [options]
 
@@ -1808,7 +1808,7 @@ Options:
 #### `openclaw models auth login-github-copilot`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
 
 Usage: openclaw models auth login-github-copilot [options]
 
@@ -1824,7 +1824,7 @@ Options:
 #### `openclaw models auth order`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Greetings, Professor Falken
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Greetings, Professor Falken
 
 Usage: openclaw models auth order [options] [command]
 
@@ -1844,7 +1844,7 @@ Commands:
 #### `openclaw models auth paste-token`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm like tmux: confusing at first, then suddenly you can't live without me.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm like tmux: confusing at first, then suddenly you can't live without me.
 
 Usage: openclaw models auth paste-token [options]
 
@@ -1861,7 +1861,7 @@ Options:
 #### `openclaw models auth setup-token`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Because texting yourself reminders is so 2024.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Because texting yourself reminders is so 2024.
 
 Usage: openclaw models auth setup-token [options]
 
@@ -1876,7 +1876,7 @@ Options:
 ### `openclaw config get`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your AI assistant, now without the $3,499 headset.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your AI assistant, now without the $3,499 headset.
 
 Usage: openclaw config get [options] <path>
 
@@ -1893,7 +1893,7 @@ Options:
 ### `openclaw config set`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I speak fluent bash, mild sarcasm, and aggressive tab-completion energy.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I speak fluent bash, mild sarcasm, and aggressive tab-completion energy.
 
 Usage: openclaw config set [options] <path> <value>
 
@@ -1911,7 +1911,7 @@ Options:
 ### `openclaw config unset`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Pairing codes exist because even bots believe in consent—and good security hygiene.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Pairing codes exist because even bots believe in consent—and good security hygiene.
 
 Usage: openclaw config unset [options] <path>
 
@@ -1927,7 +1927,7 @@ Options:
 ### `openclaw agents list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your AI assistant, now without the $3,499 headset.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your AI assistant, now without the $3,499 headset.
 
 Usage: openclaw agents list [options]
 
@@ -1942,7 +1942,7 @@ Options:
 ### `openclaw agents create`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
 
 Usage: openclaw agents [options] [command]
 
@@ -1963,7 +1963,7 @@ Docs: https://docs.openclaw.ai/cli/agents
 ### `openclaw agents delete`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Hot reload for config, cold sweat for deploys.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Hot reload for config, cold sweat for deploys.
 
 Usage: openclaw agents delete [options] <id>
 
@@ -1978,7 +1978,7 @@ Options:
 ### `openclaw agents show`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll do the boring stuff while you dramatically stare at the logs like it's cinema.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll do the boring stuff while you dramatically stare at the logs like it's cinema.
 
 Usage: openclaw agents [options] [command]
 
@@ -1999,7 +1999,7 @@ Docs: https://docs.openclaw.ai/cli/agents
 ### `openclaw agents edit`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Think different. Actually think.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Think different. Actually think.
 
 Usage: openclaw agents [options] [command]
 
@@ -2020,7 +2020,7 @@ Docs: https://docs.openclaw.ai/cli/agents
 ### `openclaw gateway start`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Siri's competent cousin.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Siri's competent cousin.
 
 Usage: openclaw gateway start [options]
 
@@ -2034,7 +2034,7 @@ Options:
 ### `openclaw gateway stop`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.
 
 Usage: openclaw gateway stop [options]
 
@@ -2048,7 +2048,7 @@ Options:
 ### `openclaw gateway status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
 
 Usage: openclaw gateway status [options]
 
@@ -2068,7 +2068,7 @@ Options:
 ### `openclaw gateway token`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Say "stop" and I'll stop—say "ship" and we'll both learn a lesson.
 
 Usage: openclaw gateway [options] [command]
 
@@ -2141,7 +2141,7 @@ Docs: https://docs.openclaw.ai/cli/gateway
 ### `openclaw gateway logs`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
 
 Usage: openclaw gateway [options] [command]
 
@@ -2214,7 +2214,7 @@ Docs: https://docs.openclaw.ai/cli/gateway
 ### `openclaw plugins disable`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
 
 Usage: openclaw plugins disable [options] <id>
 
@@ -2230,7 +2230,7 @@ Options:
 ### `openclaw plugins doctor`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Chat automation for people who peaked at IRC.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Chat automation for people who peaked at IRC.
 
 Usage: openclaw plugins doctor [options]
 
@@ -2243,7 +2243,7 @@ Options:
 ### `openclaw plugins enable`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I can run local, remote, or purely on vibes—results may vary with DNS.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I can run local, remote, or purely on vibes—results may vary with DNS.
 
 Usage: openclaw plugins enable [options] <id>
 
@@ -2259,7 +2259,7 @@ Options:
 ### `openclaw plugins info`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Ship fast, log faster.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Ship fast, log faster.
 
 Usage: openclaw plugins info [options] <id>
 
@@ -2276,7 +2276,7 @@ Options:
 ### `openclaw plugins install`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your .env is showing; don't worry, I'll pretend I didn't see it.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your .env is showing; don't worry, I'll pretend I didn't see it.
 
 Usage: openclaw plugins install [options] <path-or-spec>
 
@@ -2295,7 +2295,7 @@ Options:
 ### `openclaw plugins list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Ship fast, log faster.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Ship fast, log faster.
 
 Usage: openclaw plugins list [options]
 
@@ -2311,7 +2311,7 @@ Options:
 ### `openclaw plugins uninstall`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — OpenAI-compatible, not OpenAI-dependent.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — OpenAI-compatible, not OpenAI-dependent.
 
 Usage: openclaw plugins uninstall [options] <id>
 
@@ -2332,7 +2332,7 @@ Options:
 ### `openclaw plugins update`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll refactor your busywork like it owes me money.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll refactor your busywork like it owes me money.
 
 Usage: openclaw plugins update [options] [id]
 
@@ -2350,7 +2350,7 @@ Options:
 ### `openclaw cron list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm like tmux: confusing at first, then suddenly you can't live without me.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm like tmux: confusing at first, then suddenly you can't live without me.
 
 Usage: openclaw cron list [options]
 
@@ -2370,7 +2370,7 @@ Options:
 ### `openclaw cron add`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll do the boring stuff while you dramatically stare at the logs like it's cinema.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll do the boring stuff while you dramatically stare at the logs like it's cinema.
 
 Usage: openclaw cron add|create [options]
 
@@ -2419,7 +2419,7 @@ Options:
 ### `openclaw cron remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
 
 Usage: openclaw cron rm|remove [options] <id>
 
@@ -2441,7 +2441,7 @@ Options:
 ### `openclaw cron enable`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Claws out, commit in—let's ship something mildly responsible.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Claws out, commit in—let's ship something mildly responsible.
 
 Usage: openclaw cron enable [options] <id>
 
@@ -2462,7 +2462,7 @@ Options:
 ### `openclaw cron disable`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Greetings, Professor Falken
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Greetings, Professor Falken
 
 Usage: openclaw cron disable [options] <id>
 
@@ -2483,7 +2483,7 @@ Options:
 ### `openclaw cron run`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Hot reload for config, cold sweat for deploys.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Hot reload for config, cold sweat for deploys.
 
 Usage: openclaw cron run [options] <id>
 
@@ -2506,7 +2506,7 @@ Options:
 ### `openclaw hooks list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
 
 Usage: openclaw hooks list [options]
 
@@ -2523,7 +2523,7 @@ Options:
 ### `openclaw hooks add`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your task has been queued; your dignity has been deprecated.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your task has been queued; your dignity has been deprecated.
 
 Usage: openclaw hooks [options] [command]
 
@@ -2547,7 +2547,7 @@ Docs: https://docs.openclaw.ai/cli/hooks
 ### `openclaw hooks remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — iMessage green bubble energy, but for everyone.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — iMessage green bubble energy, but for everyone.
 
 Usage: openclaw hooks [options] [command]
 
@@ -2571,7 +2571,7 @@ Docs: https://docs.openclaw.ai/cli/hooks
 ### `openclaw memory search`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your config is valid, your assumptions are not.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your config is valid, your assumptions are not.
 
 Usage: openclaw memory search [options] <query>
 
@@ -2591,7 +2591,7 @@ Options:
 ### `openclaw memory reindex`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — The UNIX philosophy meets your DMs.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — The UNIX philosophy meets your DMs.
 
 Usage: openclaw memory [options] [command]
 
@@ -2622,7 +2622,7 @@ Docs: https://docs.openclaw.ai/cli/memory
 ### `openclaw security audit`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
 
 Usage: openclaw security audit [options]
 
@@ -2639,7 +2639,7 @@ Options:
 ### `openclaw security rotate`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I keep secrets like a vault... unless you print them in debug logs again.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I keep secrets like a vault... unless you print them in debug logs again.
 
 Usage: openclaw security [options] [command]
 
@@ -2668,7 +2668,7 @@ Docs: https://docs.openclaw.ai/cli/security
 ### `openclaw sandbox list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Think different. Actually think.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Think different. Actually think.
 
 Usage: openclaw sandbox list [options]
 
@@ -2698,7 +2698,7 @@ Output includes:
 ### `openclaw sandbox create`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Shell yeah—I'm here to pinch the toil and leave you the glory.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Shell yeah—I'm here to pinch the toil and leave you the glory.
 
 Usage: openclaw sandbox [options] [command]
 
@@ -2733,7 +2733,7 @@ Docs: https://docs.openclaw.ai/cli/sandbox
 ### `openclaw sandbox remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Because texting yourself reminders is so 2024.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Because texting yourself reminders is so 2024.
 
 Usage: openclaw sandbox [options] [command]
 
@@ -2768,7 +2768,7 @@ Docs: https://docs.openclaw.ai/cli/sandbox
 ### `openclaw message send`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm like tmux: confusing at first, then suddenly you can't live without me.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm like tmux: confusing at first, then suddenly you can't live without me.
 
 Usage: openclaw message send [options]
 
@@ -2804,7 +2804,7 @@ Options:
 ### `openclaw message read`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm like tmux: confusing at first, then suddenly you can't live without me.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm like tmux: confusing at first, then suddenly you can't live without me.
 
 Usage: openclaw message read [options]
 
@@ -2831,7 +2831,7 @@ Options:
 ### `openclaw message list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm the reason your shell history looks like a hacker-movie montage.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm the reason your shell history looks like a hacker-movie montage.
 
 Usage: openclaw message [options] [command]
 
@@ -2882,7 +2882,7 @@ Docs: https://docs.openclaw.ai/cli/message
 ### `openclaw pairing list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — No $999 stand required.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — No $999 stand required.
 
 Usage: openclaw pairing list [options] [channel]
 
@@ -2901,7 +2901,7 @@ Options:
 ### `openclaw pairing approve`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm not magic—I'm just extremely persistent with retries and coping strategies.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm not magic—I'm just extremely persistent with retries and coping strategies.
 
 Usage: openclaw pairing approve [options] <codeOrChannel> [code]
 
@@ -2922,7 +2922,7 @@ Options:
 ### `openclaw pairing reject`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Meta wishes they shipped this fast.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Meta wishes they shipped this fast.
 
 Usage: openclaw pairing [options] [command]
 
@@ -2942,7 +2942,7 @@ Docs: https://docs.openclaw.ai/cli/pairing
 ### `openclaw devices list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — One CLI to rule them all, and one more restart because you changed the port.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — One CLI to rule them all, and one more restart because you changed the port.
 
 Usage: openclaw devices list [options]
 
@@ -2961,7 +2961,7 @@ Options:
 ### `openclaw devices pair`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I speak fluent bash, mild sarcasm, and aggressive tab-completion energy.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I speak fluent bash, mild sarcasm, and aggressive tab-completion energy.
 
 Usage: openclaw devices [options] [command]
 
@@ -2984,7 +2984,7 @@ Commands:
 ### `openclaw devices remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.
 
 Usage: openclaw devices remove [options] <deviceId>
 
@@ -3006,7 +3006,7 @@ Options:
 ### `openclaw directory self`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — One CLI to rule them all, and one more restart because you changed the port.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — One CLI to rule them all, and one more restart because you changed the port.
 
 Usage: openclaw directory self [options]
 
@@ -3022,7 +3022,7 @@ Options:
 ### `openclaw directory peers`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.
 
 Usage: openclaw directory peers [options] [command]
 
@@ -3039,7 +3039,7 @@ Commands:
 ### `openclaw directory groups`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.
 
 Usage: openclaw directory groups [options] [command]
 
@@ -3057,7 +3057,7 @@ Commands:
 ### `openclaw dns setup`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Chat APIs that don't require a Senate hearing.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Chat APIs that don't require a Senate hearing.
 
 Usage: openclaw dns setup [options]
 
@@ -3074,7 +3074,7 @@ Options:
 ### `openclaw dns status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — End-to-end encrypted, drama-to-drama excluded.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — End-to-end encrypted, drama-to-drama excluded.
 
 Usage: openclaw dns [options] [command]
 
@@ -3094,7 +3094,7 @@ Docs: https://docs.openclaw.ai/cli/dns
 ### `openclaw browser open`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If it works, it's automation; if it breaks, it's a "learning opportunity."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If it works, it's automation; if it breaks, it's a "learning opportunity."
 
 Usage: openclaw browser open [options] <url>
 
@@ -3110,7 +3110,7 @@ Options:
 ### `openclaw browser close`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — It's not "failing," it's "discovering new ways to configure the same thing wrong."
 
 Usage: openclaw browser close [options] [targetId]
 
@@ -3126,7 +3126,7 @@ Options:
 ### `openclaw browser status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Works on Android. Crazy concept, we know.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Works on Android. Crazy concept, we know.
 
 Usage: openclaw browser status [options]
 
@@ -3139,7 +3139,7 @@ Options:
 ### `openclaw approvals list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I don't judge, but your missing API keys are absolutely judging you.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I don't judge, but your missing API keys are absolutely judging you.
 
 Usage: openclaw approvals|exec-approvals [options] [command]
 
@@ -3160,7 +3160,7 @@ Docs: https://docs.openclaw.ai/cli/approvals
 ### `openclaw approvals approve`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'm not saying your workflow is chaotic... I'm just bringing a linter and a helmet.
 
 Usage: openclaw approvals|exec-approvals [options] [command]
 
@@ -3181,7 +3181,7 @@ Docs: https://docs.openclaw.ai/cli/approvals
 ### `openclaw approvals reject`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If it works, it's automation; if it breaks, it's a "learning opportunity."
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If it works, it's automation; if it breaks, it's a "learning opportunity."
 
 Usage: openclaw approvals|exec-approvals [options] [command]
 
@@ -3202,7 +3202,7 @@ Docs: https://docs.openclaw.ai/cli/approvals
 ### `openclaw system events`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — One CLI to rule them all, and one more restart because you changed the port.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — One CLI to rule them all, and one more restart because you changed the port.
 
 Usage: openclaw system [options] [command]
 
@@ -3223,7 +3223,7 @@ Docs: https://docs.openclaw.ai/cli/system
 ### `openclaw system heartbeat`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Hot reload for config, cold sweat for deploys.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Hot reload for config, cold sweat for deploys.
 
 Usage: openclaw system heartbeat [options] [command]
 
@@ -3242,7 +3242,7 @@ Commands:
 ### `openclaw system presence`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If something's on fire, I can't extinguish it—but I can write a beautiful postmortem.
 
 Usage: openclaw system presence [options]
 
@@ -3261,7 +3261,7 @@ Options:
 ### `openclaw update check`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — No $999 stand required.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — No $999 stand required.
 
 Usage: openclaw update [options] [command]
 
@@ -3319,7 +3319,7 @@ Docs: https://docs.openclaw.ai/cli/update
 ### `openclaw update apply`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — curl for conversations.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — curl for conversations.
 
 Usage: openclaw update [options] [command]
 
@@ -3377,7 +3377,7 @@ Docs: https://docs.openclaw.ai/cli/update
 ### `openclaw webhooks list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I read logs so you can keep pretending you don't have to.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I read logs so you can keep pretending you don't have to.
 
 Usage: openclaw webhooks [options] [command]
 
@@ -3396,7 +3396,7 @@ Docs: https://docs.openclaw.ai/cli/webhooks
 ### `openclaw webhooks add`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — No $999 stand required.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — No $999 stand required.
 
 Usage: openclaw webhooks [options] [command]
 
@@ -3415,7 +3415,7 @@ Docs: https://docs.openclaw.ai/cli/webhooks
 ### `openclaw webhooks remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — The only bot that stays out of your training set.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — The only bot that stays out of your training set.
 
 Usage: openclaw webhooks [options] [command]
 
@@ -3434,7 +3434,7 @@ Docs: https://docs.openclaw.ai/cli/webhooks
 ### `openclaw node start`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — We ship features faster than Apple ships calculator updates.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — We ship features faster than Apple ships calculator updates.
 
 Usage: openclaw node [options] [command]
 
@@ -3468,7 +3468,7 @@ Docs: https://docs.openclaw.ai/cli/node
 ### `openclaw node stop`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I don't judge, but your missing API keys are absolutely judging you.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I don't judge, but your missing API keys are absolutely judging you.
 
 Usage: openclaw node stop [options]
 
@@ -3482,7 +3482,7 @@ Options:
 ### `openclaw node status`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — The only crab in your contacts you actually want to hear from. 🦞
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — The only crab in your contacts you actually want to hear from. 🦞
 
 Usage: openclaw node status [options]
 
@@ -3496,7 +3496,7 @@ Options:
 ### `openclaw nodes list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — I'll butter your workflow like a lobster roll: messy, delicious, effective.
 
 Usage: openclaw nodes list [options]
 
@@ -3517,7 +3517,7 @@ Options:
 ### `openclaw nodes pair`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Works on Android. Crazy concept, we know.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Works on Android. Crazy concept, we know.
 
 Usage: openclaw nodes [options] [command]
 
@@ -3560,7 +3560,7 @@ Docs: https://docs.openclaw.ai/cli/nodes
 ### `openclaw nodes remove`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — One CLI to rule them all, and one more restart because you changed the port.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — One CLI to rule them all, and one more restart because you changed the port.
 
 Usage: openclaw nodes [options] [command]
 
@@ -3603,7 +3603,7 @@ Docs: https://docs.openclaw.ai/cli/nodes
 ### `openclaw nodes invoke`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Your messages, your servers, your control.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Your messages, your servers, your control.
 
 Usage: openclaw nodes invoke [options]
 
@@ -3627,7 +3627,7 @@ Options:
 ### `openclaw skills list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Automation with claws: minimal fuss, maximal pinch.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Automation with claws: minimal fuss, maximal pinch.
 
 Usage: openclaw skills list [options]
 
@@ -3644,7 +3644,7 @@ Options:
 ### `openclaw skills info`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — Less clicking, more shipping, fewer "where did that file go" moments.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — Less clicking, more shipping, fewer "where did that file go" moments.
 
 Usage: openclaw skills info [options] <name>
 
@@ -3661,7 +3661,7 @@ Options:
 ### `openclaw acp list`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — One CLI to rule them all, and one more restart because you changed the port.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — One CLI to rule them all, and one more restart because you changed the port.
 
 Usage: openclaw acp [options] [command]
 
@@ -3694,7 +3694,7 @@ Docs: https://docs.openclaw.ai/cli/acp
 ### `openclaw acp invoke`
 
 ```
-🦞 OpenClaw 2026.2.19-2 (45d9b20) — If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.
+🦞 OpenClaw 2026.2.21-2 (35a57bc) — If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.
 
 Usage: openclaw acp [options] [command]
 
