@@ -1,7 +1,7 @@
 ---
 name: openclaw-configure
-description: "Expert-level OpenClaw CLI configuration skill. Covers channels, models, plugins, gateway, agents, hooks, cron, security, sandbox, memory, browser, nodes, DNS, webhooks, approvals, and more. Self-evolving: updates itself after learning new patterns."
-version: 1.3.0
+description: "Expert-level OpenClaw CLI configuration skill. Covers channels, models, plugins, gateway, agents, hooks, cron, security, sandbox, memory, browser, nodes, DNS, webhooks, approvals, ClawHub skill registry, and more. Self-evolving: updates itself after learning new patterns."
+version: 1.6.0
 author: zanearcher
 category: infrastructure
 ---
@@ -10,7 +10,7 @@ category: infrastructure
 
 Configure any aspect of OpenClaw via CLI. Battle-tested from real setup sessions.
 
-**Trigger on:** "openclaw", "add channel", "switch model", "configure gateway", "openclaw setup", "add telegram", "switch to claude", "openclaw cron", "openclaw hooks", "openclaw doctor", or any OpenClaw configuration task.
+**Trigger on:** "openclaw", "clawhub", "add channel", "switch model", "configure gateway", "openclaw setup", "add telegram", "switch to claude", "openclaw cron", "openclaw hooks", "openclaw doctor", "install skill", "publish skill", "search skills", "enconvo deeplink", "enconvo setup", "add enconvo agent", `enconvo://` URLs, or any OpenClaw/ClawHub configuration task.
 
 **Reference files** (same directory as this skill):
 - `commands.md` — condensed CLI reference, all 25 domains
@@ -145,6 +145,7 @@ channels logs         --channel <name> --lines <n> --json
 - `"anthropic-messages"` — Anthropic direct + MiniMax Portal
 - `"ollama"` — Ollama native (baseUrl WITHOUT /v1)
 - `"openai-completions"` — OpenAI-compatible
+- `"enconvo"` — EnConvo via proxy: use `"openai-completions"` + proxy at `127.0.0.1:54536` (see EnConvo section below)
 
 ### Provider Setup Recipes
 
@@ -202,6 +203,136 @@ channels logs         --channel <name> --lines <n> --json
 - Run: `openclaw configure` or `openclaw models auth login --provider minimax-portal`
 - api: `"anthropic-messages"` (Anthropic-compatible)
 
+**Kilo Code Gateway (v2026.2.23+):**
+- Run: `openclaw configure` → Kilo Gateway → follow onboarding auth flow
+- Default model: `kilocode/anthropic/claude-opus-4.6`
+- api: `"anthropic-messages"` (Anthropic-compatible routing)
+
+**Vercel AI Gateway (v2026.2.23+):**
+- Accepts Claude shorthand refs: `vercel-ai-gateway/claude-*` (auto-normalized to canonical Anthropic IDs)
+- Configure like any OpenAI-compatible provider
+
+**EnConvo (macOS AI agent platform via proxy):**
+- EnConvo runs at `http://localhost:54535` but doesn't speak OpenAI format
+- **Solution:** a bundled proxy at `~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs` translates OpenAI ↔ EnConvo
+- Proxy listens on `http://127.0.0.1:54536`, forwards to EnConvo at `:54535`
+- api: `"openai-completions"` (stock OpenClaw, no custom build needed)
+- Deeplink format: `enconvo://{ext}/{cmd}` → model ID = `{ext}/{cmd}`
+- No API key needed; use dummy `"token": "n/a"` in auth profiles
+- **Proxy must be running** before the gateway starts
+
+Start proxy: `nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &`
+Check proxy: `curl -s http://127.0.0.1:54536/health`
+
+```json
+"enconvo": {
+  "baseUrl": "http://127.0.0.1:54536/v1",
+  "apiKey": "n/a",
+  "api": "openai-completions",
+  "authHeader": false,
+  "models": [
+    {
+      "id": "chat_with_ai/chat",
+      "name": "Mavis (Team Lead)",
+      "api": "openai-completions",
+      "reasoning": false,
+      "input": ["text"],
+      "cost": {"input":0,"output":0,"cacheRead":0,"cacheWrite":0},
+      "contextWindow": 128000,
+      "maxTokens": 8192
+    }
+  ]
+}
+```
+
+### EnConvo Agent Setup from Deeplink — Full Recipe
+
+When user provides an `enconvo://` deeplink, follow this complete procedure. **Self-contained — no custom OpenClaw build needed.**
+
+**Input needed:** deeplink (`enconvo://{ext}/{cmd}`), agent display name, agent ID (slug), optional Telegram bot token, optional Discord bot token.
+
+**Step 1 — Parse deeplink:** Extract `{ext}/{cmd}` from `enconvo://{ext}/{cmd}`. This is the model ID.
+
+**Step 2 — Verify EnConvo reachable:**
+```bash
+curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:54535/command/call/{ext}/{cmd} \
+  -H "Content-Type: application/json" -d '{"input_text":"ping","sessionId":"setup-test"}'
+```
+
+**Step 3 — Start the EnConvo proxy (if not running):**
+```bash
+curl -s http://127.0.0.1:54536/health > /dev/null 2>&1 || \
+  nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &
+sleep 2 && curl -s http://127.0.0.1:54536/health
+```
+
+**Step 4 — Edit `~/.openclaw/openclaw.json`:**
+
+a) **Ensure enconvo provider exists** in `models.providers`. If missing, add the full block (see EnConvo provider recipe above — baseUrl `http://127.0.0.1:54536/v1`, api `"openai-completions"`).
+
+b) **Add model** to `models.providers.enconvo.models[]` (skip if same `id` exists):
+```json
+{"id":"{ext}/{cmd}","name":"{displayName}","api":"openai-completions","reasoning":false,
+ "input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0},
+ "contextWindow":128000,"maxTokens":8192}
+```
+
+c) **Add agent** to `agents.list[]`:
+```json
+{"id":"{agentId}","name":"{agentId}",
+ "workspace":"~/.openclaw/workspace-{agentId}",
+ "agentDir":"~/.openclaw/agents/{agentId}/agent",
+ "model":{"primary":"enconvo/{ext}/{cmd}"},
+ "identity":{"name":"{displayName}","emoji":"\ud83d\udce6"},
+ "subagents":{"allowAgents":["main","dev","content","ops","law","finance"]}}
+```
+
+d) **Add agent ID** to every other agent's `subagents.allowAgents` and to `tools.agentToAgent.allow`.
+
+e) **Add Telegram account** (if token provided) to `channels.telegram.accounts`:
+```json
+"{agentId}":{"enabled":true,"dmPolicy":"pairing","botToken":"{token}","groupPolicy":"allowlist","streaming":"off"}
+```
+
+f) **Add Discord account** (if token provided) to `channels.discord.accounts`:
+```json
+"{agentId}":{"enabled":true,"token":"{token}","groupPolicy":"allowlist","streaming":"off","guilds":{copy from existing accounts}}
+```
+
+g) **Add bindings** to `bindings[]`:
+```json
+{"agentId":"{agentId}","match":{"channel":"telegram","accountId":"{agentId}"}}
+{"agentId":"{agentId}","match":{"channel":"discord","accountId":"{agentId}"}}
+```
+
+h) **Enable plugin:** Ensure `plugins.entries.enconvo` is `{"enabled":true}`.
+
+**Step 5 — Create agent directory + auth profile:**
+```bash
+mkdir -p ~/.openclaw/agents/{agentId}/agent ~/.openclaw/workspace-{agentId}
+```
+Write (or merge into existing) `~/.openclaw/agents/{agentId}/agent/auth-profiles.json`:
+```json
+{
+  "version": 1,
+  "profiles": {
+    "enconvo:local": {"type":"token","provider":"enconvo","token":"n/a"}
+  },
+  "lastGood": {"enconvo":"enconvo:local"}
+}
+```
+**IMPORTANT:** If auth-profiles.json already exists, READ it first and ADD the `enconvo:local` profile — don't overwrite other profiles.
+
+**Step 6 — Restart gateway:**
+```bash
+pkill -9 -f "openclaw gateway" 2>/dev/null; sleep 1
+openclaw gateway --force &
+# Or: nohup pnpm openclaw gateway run --bind loopback --port 18789 --force > /tmp/openclaw-gateway.log 2>&1 &
+sleep 8 && lsof -i :18789 | head -3
+```
+
+**Step 7 — Confirm:** Print summary of what was configured.
+
 ### Model Switching — Full Workflow
 Switching the default model requires more than `models set`:
 ```bash
@@ -217,8 +348,8 @@ openclaw models fallbacks add "fallback2/model"
 #    Session files: ~/.openclaw/agents/<agent>/sessions/
 #    Session index: ~/.openclaw/agents/<agent>/sessions/sessions.json
 python3 -c "
-import json
-path = '$HOME/.openclaw/agents/main/sessions/sessions.json'
+import json, os
+path = os.path.expanduser('~/.openclaw/agents/main/sessions/sessions.json')
 with open(path) as f: data = json.load(f)
 sid = data.pop('agent:main:main', {}).get('sessionId','')
 with open(path, 'w') as f: json.dump(data, f, indent=2)
@@ -227,7 +358,7 @@ print(f'Removed session {sid}')
 rm ~/.openclaw/agents/main/sessions/<session-id>.jsonl
 
 # 4. Restart gateway to pick up config
-openclaw gateway stop && sleep 2 && openclaw gateway install
+openclaw gateway stop && sleep 2 && openclaw gateway
 
 # 5. Verify
 openclaw agent --agent main --message "What model are you?" --json --local 2>&1 | grep '"model"'
@@ -317,7 +448,7 @@ plugins doctor                           Report load issues
 
 ### Key Plugin IDs
 Channels: telegram, whatsapp, discord, imessage, signal, slack, matrix, googlechat, msteams, mattermost, irc, nostr, feishu, line, zalo, zalouser, tlon, bluebubbles, nextcloud-talk, twitch
-Auth: minimax-portal-auth, google-gemini-cli-auth, google-antigravity-auth, copilot-proxy
+Auth: minimax-portal-auth, google-gemini-cli-auth, google-antigravity-auth, copilot-proxy, enconvo
 Features: memory-core, memory-lancedb, device-pair, phone-control, talk-voice, diagnostics-otel, voice-call, open-prose, lobster, llm-task, thread-ownership
 
 ---
@@ -359,6 +490,9 @@ agents list [--bindings] [--json]        List agents
 agents add                               Add new agent (interactive)
 agents delete <id> [--force]             Delete agent
 agents set-identity                      Update name/theme/emoji/avatar
+agents bindings                          List routing bindings
+agents bind                              Add routing binding for an agent
+agents unbind                            Remove routing binding for an agent
 ```
 
 ### Config (openclaw.json -> agents.defaults)
@@ -400,7 +534,7 @@ openclaw agents add --workspace ~/.openclaw/workspace-<agent-id> --bind telegram
 openclaw agents set-identity  # interactive — pick the agent, set name/emoji/avatar
 ```
 
-### Agent Routing via Bindings
+### Agent Routing via Bindings (v2026.2.26+)
 
 Route channel messages to specific agents with the top-level `bindings` array in `openclaw.json`:
 ```json
@@ -411,6 +545,14 @@ Route channel messages to specific agents with the top-level `bindings` array in
 ]
 ```
 Each Telegram account routes to the matching agent. The `main` agent also serves as the default (no explicit rules needed beyond the binding).
+
+**CLI Management (v2026.2.26+):**
+```bash
+openclaw agents bindings                 # List all bindings
+openclaw agents bind --agentId <id> --channel <ch> --accountId <id>
+openclaw agents unbind <agentId> --channel <ch> --accountId <id>
+```
+**Features:** Account-scoped route management, channel-only to account-scoped binding upgrades, role-aware binding identity handling, plugin-resolved binding account IDs, and optional account-binding prompts in `openclaw channels add`.
 
 ### Telegram Multi-Account Config
 
@@ -594,6 +736,38 @@ Major security overhaul with 40+ fixes:
 - TTS model-driven provider switching now opt-in by default
 - Sandbox browser containers default to dedicated Docker network
 
+### Heartbeat DM Delivery Control (v2026.2.25+)
+Replace the old boolean DM toggle with explicit policy field:
+```json
+"agents": {
+  "defaults": {
+    "heartbeat": {
+      "directPolicy": "allow"   // "allow" (default) | "block"
+    }
+  }
+}
+```
+Also supported per-agent via `agents.list[].heartbeat.directPolicy`. Default is `allow` (DMs permitted).
+
+### Slack Session Thread Token Limit (v2026.2.25+)
+Cap parent-session token inheritance for thread sessions to avoid bricking new threads:
+```json
+"session": {
+  "parentForkMaxTokens": 100000   // default 100000; set 0 to disable limit
+}
+```
+
+### Multi-User / Shared Runtime Hardening (v2026.2.24+)
+For shared-user setups (multiple people using one OpenClaw instance):
+```json
+"security": {
+  "trust_model": {
+    "multi_user_heuristic": true
+  }
+}
+```
+When enabled, flags likely shared-user ingress and provides hardening guidance. For intentional multi-user deployments: `sandbox.mode="all"`, workspace-scoped FS, reduced tool surface, avoid personal/private identities on shared runtimes.
+
 ---
 
 ## Sandbox
@@ -611,7 +785,7 @@ Config: `tools.sandbox.tools.allow` / `tools.sandbox.tools.deny`
 ## Memory
 
 ```
-memory search <query> [--max-results <n>] Search memory
+memory search <query> [--query <text>] [--max-results <n>]  Search memory (positional or --query)
 memory index [--force]                    Reindex files
 memory status [--json]                    Index status
 ```
@@ -705,6 +879,15 @@ nodes camera / canvas / screen / location / notify / push
 
 ## Other Domains
 
+### Secrets (v2026.2.26+)
+```
+secrets audit [--deep] [--fix]           Audit secrets storage
+secrets configure                        Interactive secrets setup
+secrets apply [--file <path>]            Apply secrets snapshot (target-path validation)
+secrets reload                           Hot-reload running gateway secrets
+```
+**Features:** Full external secrets management workflow with runtime snapshot activation, strict target-path validation, safer migration scrubbing, ref-only auth-profile support, and dedicated docs.
+
 ### DNS
 ```
 dns setup --domain <domain> [--apply]    CoreDNS for wide-area Bonjour
@@ -729,11 +912,12 @@ system presence [--json]                 Presence entries
 webhooks gmail                           Gmail Pub/Sub hooks (via gogcli)
 ```
 
-### ACP
+### ACP (Agent Control Protocol) (v2026.2.26+)
 ```
 acp [--url --token --session --verbose]  Run ACP bridge
 acp client                               Interactive ACP client
 ```
+**NEW in v2026.2.26:** ACP agents are now first-class runtimes for thread sessions with `acp` spawn/send dispatch integration, acpx backend bridging, lifecycle controls, startup reconciliation, runtime cleanup, and coalesced thread replies. Thread-bound subagents can now be dispatched via ACP for enhanced realtime capabilities.
 
 ### Skills
 ```
@@ -762,6 +946,7 @@ logs [--follow] [--limit <n>]            Tail gateway logs
 dashboard                                Open Control UI
 tui [--session <key>]                    Terminal UI
 sessions [--active <min>]               List sessions
+sessions cleanup [--agent <id>] [--max-disk-bytes <n>]  Clean up old sessions (v2026.2.23+)
 agent --to <num> --message <text> [--deliver] [--thinking <level>]  Run agent turn
 onboard [--flow quickstart|advanced]     Onboarding wizard
 setup [--mode local|remote]              Init config + workspace
@@ -770,6 +955,189 @@ uninstall [--all]                        Remove gateway + data
 qr [--json]                              iOS pairing QR
 completion                               Shell completion
 docs <query>                             Search live docs
+```
+
+---
+
+## External Secrets Management (v2026.2.26+)
+
+Manage credentials and auth profiles via external secrets providers (HashiCorp Vault, AWS Secrets Manager, etc.)
+
+```bash
+openclaw secrets audit                   # Audit current secrets storage
+openclaw secrets configure               # Interactive setup wizard
+openclaw secrets apply --file <path>     # Apply snapshot with strict target-path validation
+openclaw secrets reload                  # Hot-reload running gateway
+```
+
+**Key Features:**
+- **Runtime snapshot activation:** Secrets applied at runtime without restart
+- **Strict target-path validation:** Prevents accidental overwrites to wrong config paths
+- **Safer migration scrubbing:** Cleaner transitions from inline keys to external refs
+- **Ref-only auth-profiles:** Auth profiles can now reference external secret values via `$secret:provider/path` syntax
+- **Built-in providers:** Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault
+
+**Example Auth Profile with External Secret:**
+```json
+"auth-profiles.json": {
+  "anthropic:vault": {
+    "type": "anthropic-bearer",
+    "key": "$secret:vault/secret/data/anthropic#api_key"
+  }
+}
+```
+
+---
+
+## ClawHub (Skill Registry CLI)
+
+**Separate CLI** from OpenClaw. Manages the ClawHub skill marketplace — install, search, publish, and browse community skills.
+
+**CLI:** `clawhub` (v0.6.1)
+**Trigger on:** "clawhub", "install skill", "publish skill", "search skills", "browse skills", "skill registry"
+
+### Global Options
+```
+--workdir <dir>       Working directory (default: cwd)
+--dir <dir>           Skills directory (relative to workdir, default: skills)
+--site <url>          Site base URL (for browser login)
+--registry <url>      Registry API base URL
+--no-input            Disable prompts
+```
+
+### Environment Variables
+```
+CLAWHUB_SITE          Site base URL
+CLAWHUB_REGISTRY      Registry API base URL
+CLAWHUB_WORKDIR       Working directory
+(CLAWDHUB_* also supported)
+```
+
+### Authentication
+
+```
+login [--token <token>] [--label <label>] [--no-browser]
+                         Log in (opens browser or stores token)
+                         --token: API token (skip browser)
+                         --label: Token label for browser flow (default: "CLI token")
+                         --no-browser: Don't open browser (requires --token)
+logout                   Remove stored token
+whoami                   Validate token
+auth login [options]     Same as top-level login
+auth logout              Same as top-level logout
+auth whoami              Same as top-level whoami
+```
+
+### Discovery & Browsing
+
+```
+explore [--limit <n>] [--sort <order>] [--json]
+                         Browse latest updated skills from the registry
+                         --limit: Number of skills (max 200, default 25)
+                         --sort: newest|downloads|rating|installs|installsAllTime|trending (default: newest)
+
+search <query...> [--limit <n>]
+                         Vector search skills by query string
+
+inspect <slug> [options]
+                         Fetch skill metadata and files without installing
+                         --version <version>   Version to inspect
+                         --tag <tag>           Tag to inspect (default: latest)
+                         --versions            List version history (first page)
+                         --limit <n>           Max versions to list (1-200)
+                         --files               List files for the selected version
+                         --file <path>         Fetch raw file content (text <= 200KB)
+                         --json                Output JSON
+```
+
+### Install & Update
+
+```
+install <slug> [--version <version>] [--force]
+                         Install skill into <dir>/<slug>
+                         --version: Specific version to install
+                         --force: Overwrite existing folder
+
+update [slug] [--all] [--version <version>] [--force]
+                         Update installed skills
+                         --all: Update all installed skills
+                         --version: Update to specific version (single slug only)
+                         --force: Overwrite when local files don't match any version
+
+list                     List installed skills (from lockfile)
+```
+
+### Publishing
+
+```
+publish <path> [options]
+                         Publish skill from folder
+                         --slug <slug>               Skill slug
+                         --name <name>               Display name
+                         --version <version>          Version (semver)
+                         --fork-of <slug[@version]>  Mark as fork of existing skill
+                         --changelog <text>           Changelog text
+                         --tags <tags>                Comma-separated tags (default: "latest")
+
+sync [options]           Scan local skills and publish new/updated ones
+                         --root <dir...>     Extra scan roots (one or more)
+                         --all               Upload all new/updated without prompting
+                         --dry-run           Show what would be uploaded
+                         --bump <type>       Version bump: patch|minor|major (default: patch)
+                         --changelog <text>  Changelog for updates (non-interactive)
+                         --tags <tags>       Comma-separated tags (default: "latest")
+                         --concurrency <n>   Concurrent registry checks (default: 4)
+```
+
+### Social
+
+```
+star <slug> [--yes]      Add a skill to your highlights
+unstar <slug> [--yes]    Remove a skill from your highlights
+```
+
+### Moderation (moderator/admin only)
+
+```
+delete <slug> [--yes]              Soft-delete a skill
+hide <slug> [--yes]                Hide a skill
+undelete <slug> [--yes]            Restore a deleted skill
+unhide <slug> [--yes]              Unhide a hidden skill
+ban-user <handleOrId> [options]    Ban user and delete owned skills
+                                   --id: Treat argument as user id
+                                   --fuzzy: Fuzzy user search (admin only)
+                                   --reason <reason>: Ban reason
+                                   --yes: Skip confirmation
+set-role <handleOrId> <role>       Change user role: user|moderator|admin (admin only)
+                                   --id: Treat argument as user id
+                                   --fuzzy: Fuzzy user search (admin only)
+                                   --yes: Skip confirmation
+```
+
+### Common Workflows
+
+**Browse and install a skill:**
+```bash
+clawhub explore --sort trending --limit 10    # browse popular skills
+clawhub inspect <slug> --files                # preview files before install
+clawhub install <slug>                        # install to ./skills/<slug>
+```
+
+**Publish a skill:**
+```bash
+clawhub login                                 # authenticate first
+clawhub publish ./my-skill --slug my-skill --name "My Skill" --version 1.0.0
+```
+
+**Bulk sync local skills:**
+```bash
+clawhub sync --dry-run                        # preview what would be published
+clawhub sync --all --bump patch               # publish all new/updated
+```
+
+**Update all installed skills:**
+```bash
+clawhub update --all
 ```
 
 ---
@@ -800,6 +1168,20 @@ docs <query>                             Search live docs
 | `sessions_spawn` works from main but not between other agents | Only main has `subagents.allowAgents` | Add `subagents.allowAgents` to ALL agents that need to spawn others |
 | `openclaw gateway stop` doesn't kill old process | PID still holding port | `kill -9 <pid>` then `openclaw gateway install --force` |
 | Config changes not taking effect after restart | Old gateway process still running on port | Check `lsof -i :18789`, kill stale PID, then restart |
+| iMessage `imsg rpc exited (code 1)` in gateway health | Node.js LaunchAgent lacks Full Disk Access to `chat.db` | System Settings → Privacy & Security → Full Disk Access → add `/opt/homebrew/bin/node` (symlink survives upgrades) |
+| Heartbeat sending to DMs (v2026.2.25+) | Default is `allow` again (v2026.2.24 block is reverted) | To block DM heartbeat: set `agents.defaults.heartbeat.directPolicy: "block"` (or per-agent `agents.list[].heartbeat.directPolicy`) |
+| Browser `network: "container:<id>"` blocked | **BREAKING**: Docker container-namespace join blocked by default | Set `agents.defaults.sandbox.docker.dangerouslyAllowContainerNamespaceJoin: true` to re-enable |
+| Browser SSRF private network errors (v2026.2.23+) | **BREAKING**: `browser.ssrfPolicy.allowPrivateNetwork` renamed | Use `browser.ssrfPolicy.dangerouslyAllowPrivateNetwork`; run `openclaw doctor --fix` to auto-migrate |
+| `memory search "query"` errors | v2026.2.24+ accepts both positional and `--query <text>` | Both forms work: `memory search "text"` or `memory search --query "text"` |
+| Secrets `apply` fails with "invalid target" | Target path doesn't exist or is restricted | Run `openclaw secrets audit` to see valid paths; use `--fix` to auto-correct |
+| Secrets not reloading after `apply` | Gateway not responding to reload signal | Run `openclaw secrets reload` or restart gateway manually |
+| ACP agent won't initialize in thread | Missing startup reconciliation config | Ensure agent has `subagents.allowAgents` includes the ACP agent ID |
+| Thread-bound subagent spawns to wrong channel | ACP dispatch not honoring thread context | Check `acp` config in agent workspace and verify thread session metadata |
+| Bindings command errors with "account not found" | Plugin registry hasn't populated account IDs | Run `openclaw plugins doctor` to check plugin health and retry bindings command |
+| EnConvo agent "No API key found for provider enconvo" | Missing `enconvo:local` auth profile | Add `{"type":"token","provider":"enconvo","token":"n/a"}` to agent's `auth-profiles.json` + `lastGood.enconvo` |
+| EnConvo agent returns empty/502 | Proxy not running | Start: `nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &` then check: `curl -s http://127.0.0.1:54536/health` |
+| EnConvo agent returns garbled response | Provider baseUrl points to EnConvo directly instead of proxy | Fix: `baseUrl` must be `http://127.0.0.1:54536/v1` (proxy), not `http://localhost:54535` |
+| EnConvo curl works but OpenClaw agent fails | Proxy or EnConvo not running, or model ID mismatch | Test proxy: `curl -s -X POST http://127.0.0.1:54536/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"{ext}/{cmd}","messages":[{"role":"user","content":"test"}]}'` |
 
 ---
 
@@ -823,7 +1205,7 @@ This skill grows with every use. Never let hard-won knowledge be lost.
 
 ## Version Check & Auto-Update Protocol
 
-**This skill was last updated for:** `v2026.2.21-2`
+**This skill was last updated for:** `v2026.2.26`
 
 ### Version Check (MANDATORY — run at start of every OpenClaw session)
 
@@ -834,7 +1216,7 @@ Before answering any OpenClaw question, Claude MUST:
 INSTALLED=$(openclaw --version 2>&1 | head -1)
 
 # 2. Check what this skill documents
-SKILL_VERSION="v2026.2.21-2"
+SKILL_VERSION="v2026.2.26"
 ```
 
 Compare the installed version against `SKILL_VERSION` above. If the installed version is NEWER than the skill version, trigger the **Skill Refresh** procedure below.
