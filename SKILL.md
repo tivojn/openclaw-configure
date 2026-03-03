@@ -934,12 +934,23 @@ acp client                               Interactive ACP client
 ```
 **NEW in v2026.2.26:** ACP agents are now first-class runtimes for thread sessions with `acp` spawn/send dispatch integration, acpx backend bridging, lifecycle controls, startup reconciliation, runtime cleanup, and coalesced thread replies. Thread-bound subagents can now be dispatched via ACP for enhanced realtime capabilities.
 
-### Skills
+### Skills (Runtime — `openclaw skills`)
+
+OpenClaw's built-in skill commands manage **locally installed** skills at runtime:
 ```
-skills list [--eligible] [--json]        List skills
-skills info <name>                       Skill details
-skills check                             Ready vs missing requirements
+skills list [--eligible] [--json]        List skills available to agents
+skills info <name>                       Skill details + requirements
+skills check                             Check which skills are ready vs missing requirements
 ```
+
+**Relationship to ClawHub:** `openclaw skills` reads from the local skills directory. `clawhub` (separate CLI) manages the **registry** — install, publish, search, update. Typical flow:
+```bash
+clawhub install <slug>          # download skill from ClawHub registry
+openclaw skills list            # verify it appears locally
+openclaw skills check           # confirm requirements met
+openclaw gateway stop && openclaw gateway  # restart to pick up new skill
+```
+See the **ClawHub** section below for the full registry CLI.
 
 ### Update
 ```
