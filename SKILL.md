@@ -1,7 +1,7 @@
 ---
 name: openclaw-configure
 description: "Expert-level OpenClaw CLI configuration skill. Covers channels, models, plugins, gateway, agents, hooks, cron, security, sandbox, memory, browser, nodes, DNS, webhooks, approvals, ClawHub skill registry, and more. Self-evolving: updates itself after learning new patterns."
-version: 1.6.0
+version: 1.7.0
 author: zanearcher
 category: infrastructure
 ---
@@ -79,6 +79,11 @@ telegram, whatsapp, discord, irc, googlechat, slack, signal, imessage, feishu, n
 - **Forum tag management**: `available_tags` editing
 - **Channel topics**: Included in trusted inbound metadata
 - **Thread-bound subagents**: Per-thread sessions with focus/list controls
+- **Thread lifecycle (v2026.3.1+)**: Inactivity-based lifecycle (`idleHours` default 24h) + optional `maxAgeHours` hard limit, `/session idle` + `/session max-age` commands
+
+**Telegram DM Topics (v2026.3.1+):** Per-DM `direct` + topic config (allowlists, `dmPolicy`, `skills`, `systemPrompt`, `requireTopic`). DM topics route as distinct sessions.
+
+**Feishu (v2026.3.1+):** Docx table creation/cell writing, image/file uploads, reactions, chat tooling, group session scopes (`group`/`group_sender`/`group_topic`/`group_topic_sender`), `replyInThread` config, multi-account `defaultAccount` routing.
 
 **iMessage:** Uses `imsg` CLI. `--cli-path imsg`. dmPolicy: "allowlist". Plugin: `imessage`.
 
@@ -471,6 +476,12 @@ gateway probe                            Reachability + health summary
 gateway usage-cost                       Usage cost from session logs
 ```
 
+### Container Probes (v2026.3.1+)
+Built-in HTTP liveness/readiness endpoints for Docker/Kubernetes:
+- `/health`, `/healthz` — liveness
+- `/ready`, `/readyz` — readiness
+Fallback routing preserves existing handlers on those paths.
+
 ### Config (openclaw.json -> gateway)
 ```json
 "gateway": {
@@ -494,6 +505,9 @@ agents bindings                          List routing bindings
 agents bind                              Add routing binding for an agent
 agents unbind                            Remove routing binding for an agent
 ```
+
+### Thinking Defaults (v2026.3.1+)
+Claude 4.6 models now default to `adaptive` thinking level. Other reasoning-capable models default to `low` unless configured.
 
 ### Config (openclaw.json -> agents.defaults)
 ```json
@@ -672,6 +686,7 @@ openclaw agent \
 config get <dot.path>                    Read config value
 config set <dot.path> <value>            Set config value
 config unset <dot.path>                  Remove config value
+config file                              Print active config file path (v2026.3.1+)
 configure [--section <name>]             Interactive wizard
 ```
 Sections: workspace, model, web, gateway, daemon, channels, skills, health
@@ -1182,6 +1197,12 @@ clawhub update --all
 | EnConvo agent returns empty/502 | Proxy not running | Start: `nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &` then check: `curl -s http://127.0.0.1:54536/health` |
 | EnConvo agent returns garbled response | Provider baseUrl points to EnConvo directly instead of proxy | Fix: `baseUrl` must be `http://127.0.0.1:54536/v1` (proxy), not `http://localhost:54535` |
 | EnConvo curl works but OpenClaw agent fails | Proxy or EnConvo not running, or model ID mismatch | Test proxy: `curl -s -X POST http://127.0.0.1:54536/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"{ext}/{cmd}","messages":[{"role":"user","content":"test"}]}'` |
+| **BREAKING** Node exec approval fails (v2026.3.1+) | Approval payloads now require `systemRunPlan` | Add `systemRunPlan` to node `host=node` approval requests |
+| **BREAKING** Node `system.run` path mismatch (v2026.3.1+) | Commands now pinned to canonical `realpath` | Update allowlists/tests to use canonical paths (e.g. `/usr/bin/tr` not `tr`) |
+| OpenAI streaming fails silently (v2026.3.1+) | WebSocket transport is now default for OpenAI | Set `params.openaiWsWarmup: false` per-model if WS issues; or configure `transport: "sse"` to force SSE |
+| Gateway WS insecure on private network (v2026.3.1+) | Plaintext `ws://` now loopback-only by default | Set `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` for private network access |
+| Cron job runs at ~1/3 of configured timeout (v2026.3.1+) | Stale CLI session ID reused | Fixed in v2026.3.1 — isolated cron runs use fresh watchdog profiles |
+| `cron run` returns 0 on failure | Exit code was always 0 | Fixed in v2026.3.1 — returns exit 1 for non-run/error outcomes |
 
 ---
 
@@ -1205,27 +1226,32 @@ This skill grows with every use. Never let hard-won knowledge be lost.
 
 ## Version Check & Auto-Update Protocol
 
-**This skill was last updated for:** `v2026.2.26`
+**This skill was last updated for:** `v2026.3.1`
 
 ### Version Check (MANDATORY — run at start of every OpenClaw session)
 
-Before answering any OpenClaw question, Claude MUST:
+Before answering any OpenClaw question, Claude MUST check both installed AND registry versions:
 
 ```bash
 # 1. Get installed version
 INSTALLED=$(openclaw --version 2>&1 | head -1)
 
-# 2. Check what this skill documents
-SKILL_VERSION="v2026.2.26"
+# 2. Check latest available version from official registry
+LATEST=$(openclaw update status --json 2>&1 | python3 -c "import sys,json; print(json.load(sys.stdin).get('registry',{}).get('latestVersion','unknown'))" 2>/dev/null || echo "unknown")
+
+# 3. Check what this skill documents
+SKILL_VERSION="v2026.3.1"
 ```
 
-Compare the installed version against `SKILL_VERSION` above. If the installed version is NEWER than the skill version, trigger the **Skill Refresh** procedure below.
-
-If the versions match, proceed normally — no refresh needed.
+**Decision matrix:**
+- If `INSTALLED` matches `SKILL_VERSION` AND no newer `LATEST` → proceed normally
+- If `INSTALLED` is NEWER than `SKILL_VERSION` → trigger **Skill Refresh** (local update already happened)
+- If `LATEST` is NEWER than `INSTALLED` → inform user: "OpenClaw vX.X.X available. Update with `openclaw update --yes`"
+- If `LATEST` is NEWER than `SKILL_VERSION` AND `INSTALLED` matches `LATEST` → trigger **Skill Refresh** (user updated outside this session)
 
 ### Skill Refresh Procedure
 
-When a newer OpenClaw version is detected:
+When a newer OpenClaw version is detected (installed or available):
 
 1. **Notify the user:** "OpenClaw updated to vX.X.X — refreshing skill knowledge..."
 
@@ -1265,11 +1291,3 @@ When a newer OpenClaw version is detected:
    - Bump the `version:` in the YAML frontmatter
 
 6. **Confirm:** "Skill refreshed for vX.X.X. Ready."
-
-### Checking for Available Updates (not yet installed)
-
-To check if a newer version is available upstream (without installing):
-```bash
-openclaw update status --json
-```
-The `registry.latestVersion` field shows the latest published version. If newer than installed, inform the user they can upgrade with `openclaw update --yes`.
