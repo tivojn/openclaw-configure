@@ -1,23 +1,48 @@
 ---
 name: openclaw-configure
-description: "Expert-level OpenClaw CLI configuration skill. Covers channels, models, plugins, gateway, agents, hooks, cron, security, sandbox, memory, browser, nodes, DNS, webhooks, approvals, ClawHub skill registry, and more. Self-evolving: updates itself after learning new patterns."
-version: 1.7.0
+description: "Expert-level OpenClaw CLI configuration skill. Covers channels, models, plugins, gateway, agents, hooks, cron, security, sandbox, memory, browser, nodes, DNS, webhooks, approvals, backup, ACP provenance, ClawHub skill registry, tasks, and more. Self-evolving: updates itself after learning new patterns."
+version: 2026.4.27
 author: zanearcher
 category: infrastructure
+openclaw_version: "2026.4.27"
+tags:
+  - openclaw
+  - cli
+  - gateway
+  - channels
+  - models
+  - plugins
+  - agents
+  - hooks
+  - cron
+  - security
+  - sandbox
+  - memory
+  - browser
+  - nodes
+  - dns
+  - webhooks
+  - approvals
+  - backup
+  - acp
+  - clawhub
+  - skills
+  - secrets
+  - tasks
 ---
 
 # OpenClaw-Configure Skill
 
 Configure any aspect of OpenClaw via CLI. Battle-tested from real setup sessions.
 
-**Trigger on:** "openclaw", "clawhub", "add channel", "switch model", "configure gateway", "openclaw setup", "add telegram", "switch to claude", "openclaw cron", "openclaw hooks", "openclaw doctor", "install skill", "publish skill", "search skills", "enconvo deeplink", "enconvo setup", "add enconvo agent", `enconvo://` URLs, or any OpenClaw/ClawHub configuration task.
+**Trigger on:** "openclaw", "clawhub", "add channel", "switch model", "configure gateway", "openclaw setup", "add telegram", "switch to claude", "openclaw cron", "openclaw hooks", "openclaw doctor", "install skill", "publish skill", "search skills", or any OpenClaw/ClawHub configuration task.
 
 **Reference files** (same directory as this skill):
 - `commands.md` — condensed CLI reference, all 25 domains
 - `cli-reference.md` — full `--help` for 142+ commands
 - `oauth2-setup.md` — OAuth2 model setup guide
 
-**IMPORTANT — Auto-Update Check:** Before answering any OpenClaw question, Claude MUST run the **Version Check Protocol** (see bottom of this file) to detect if a newer OpenClaw version is installed than what this skill documents. If yes, refresh the skill files first.
+**IMPORTANT — Auto-Update Check:** Before answering any OpenClaw question, Claude MUST run the **Version Check & Auto-Update Protocol** (see bottom of this file). This checks installed vs latest vs skill versions, asks the user whether to update if a newer version exists, and auto-syncs the skill to match the local installed version.
 
 ---
 
@@ -67,7 +92,7 @@ telegram, whatsapp, discord, irc, googlechat, slack, signal, imessage, feishu, n
 
 ### Channel-Specific Notes
 
-**Telegram:** Bot token from @BotFather. `--token <token>`. Default dmPolicy: "pairing" (users /start then get approved). Streaming: `channels.telegram.streaming: true` (simplified in v2026.2.21). Lifecycle status reactions: configurable emoji for queued/thinking/tool/done/error phases. Plugin: `telegram`.
+**Telegram:** Bot token from @BotFather. `--token <token>`. Default dmPolicy: "pairing" (users /start then get approved). Streaming: `channels.telegram.streaming: "partial"` (default since v2026.3.2; uses `sendMessageDraft` for live preview with separated reasoning/answer lanes). Lifecycle status reactions: configurable emoji for queued/thinking/tool/done/error phases. Per-topic `agentId` overrides for forum groups and DM topics (v2026.3.7). Voice mention gating: `disableAudioPreflight` to skip transcription-based mention detection. Plugin: `telegram`.
 
 **WhatsApp:** `openclaw channels login --channel whatsapp` (QR code). dmPolicy: "allowlist" with E.164 numbers. `selfChatMode: true` for self-messaging. Plugin: `whatsapp`.
 
@@ -150,8 +175,6 @@ channels logs         --channel <name> --lines <n> --json
 - `"anthropic-messages"` — Anthropic direct + MiniMax Portal
 - `"ollama"` — Ollama native (baseUrl WITHOUT /v1)
 - `"openai-completions"` — OpenAI-compatible
-- `"enconvo"` — EnConvo via proxy: use `"openai-completions"` + proxy at `127.0.0.1:54536` (see EnConvo section below)
-
 ### Provider Setup Recipes
 
 **Ollama (local):**
@@ -216,127 +239,6 @@ channels logs         --channel <name> --lines <n> --json
 **Vercel AI Gateway (v2026.2.23+):**
 - Accepts Claude shorthand refs: `vercel-ai-gateway/claude-*` (auto-normalized to canonical Anthropic IDs)
 - Configure like any OpenAI-compatible provider
-
-**EnConvo (macOS AI agent platform via proxy):**
-- EnConvo runs at `http://localhost:54535` but doesn't speak OpenAI format
-- **Solution:** a bundled proxy at `~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs` translates OpenAI ↔ EnConvo
-- Proxy listens on `http://127.0.0.1:54536`, forwards to EnConvo at `:54535`
-- api: `"openai-completions"` (stock OpenClaw, no custom build needed)
-- Deeplink format: `enconvo://{ext}/{cmd}` → model ID = `{ext}/{cmd}`
-- No API key needed; use dummy `"token": "n/a"` in auth profiles
-- **Proxy must be running** before the gateway starts
-
-Start proxy: `nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &`
-Check proxy: `curl -s http://127.0.0.1:54536/health`
-
-```json
-"enconvo": {
-  "baseUrl": "http://127.0.0.1:54536/v1",
-  "apiKey": "n/a",
-  "api": "openai-completions",
-  "authHeader": false,
-  "models": [
-    {
-      "id": "chat_with_ai/chat",
-      "name": "Mavis (Team Lead)",
-      "api": "openai-completions",
-      "reasoning": false,
-      "input": ["text"],
-      "cost": {"input":0,"output":0,"cacheRead":0,"cacheWrite":0},
-      "contextWindow": 128000,
-      "maxTokens": 8192
-    }
-  ]
-}
-```
-
-### EnConvo Agent Setup from Deeplink — Full Recipe
-
-When user provides an `enconvo://` deeplink, follow this complete procedure. **Self-contained — no custom OpenClaw build needed.**
-
-**Input needed:** deeplink (`enconvo://{ext}/{cmd}`), agent display name, agent ID (slug), optional Telegram bot token, optional Discord bot token.
-
-**Step 1 — Parse deeplink:** Extract `{ext}/{cmd}` from `enconvo://{ext}/{cmd}`. This is the model ID.
-
-**Step 2 — Verify EnConvo reachable:**
-```bash
-curl -s -o /dev/null -w "%{http_code}" -X POST http://localhost:54535/command/call/{ext}/{cmd} \
-  -H "Content-Type: application/json" -d '{"input_text":"ping","sessionId":"setup-test"}'
-```
-
-**Step 3 — Start the EnConvo proxy (if not running):**
-```bash
-curl -s http://127.0.0.1:54536/health > /dev/null 2>&1 || \
-  nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &
-sleep 2 && curl -s http://127.0.0.1:54536/health
-```
-
-**Step 4 — Edit `~/.openclaw/openclaw.json`:**
-
-a) **Ensure enconvo provider exists** in `models.providers`. If missing, add the full block (see EnConvo provider recipe above — baseUrl `http://127.0.0.1:54536/v1`, api `"openai-completions"`).
-
-b) **Add model** to `models.providers.enconvo.models[]` (skip if same `id` exists):
-```json
-{"id":"{ext}/{cmd}","name":"{displayName}","api":"openai-completions","reasoning":false,
- "input":["text"],"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0},
- "contextWindow":128000,"maxTokens":8192}
-```
-
-c) **Add agent** to `agents.list[]`:
-```json
-{"id":"{agentId}","name":"{agentId}",
- "workspace":"~/.openclaw/workspace-{agentId}",
- "agentDir":"~/.openclaw/agents/{agentId}/agent",
- "model":{"primary":"enconvo/{ext}/{cmd}"},
- "identity":{"name":"{displayName}","emoji":"\ud83d\udce6"},
- "subagents":{"allowAgents":["main","dev","content","ops","law","finance"]}}
-```
-
-d) **Add agent ID** to every other agent's `subagents.allowAgents` and to `tools.agentToAgent.allow`.
-
-e) **Add Telegram account** (if token provided) to `channels.telegram.accounts`:
-```json
-"{agentId}":{"enabled":true,"dmPolicy":"pairing","botToken":"{token}","groupPolicy":"allowlist","streaming":"off"}
-```
-
-f) **Add Discord account** (if token provided) to `channels.discord.accounts`:
-```json
-"{agentId}":{"enabled":true,"token":"{token}","groupPolicy":"allowlist","streaming":"off","guilds":{copy from existing accounts}}
-```
-
-g) **Add bindings** to `bindings[]`:
-```json
-{"agentId":"{agentId}","match":{"channel":"telegram","accountId":"{agentId}"}}
-{"agentId":"{agentId}","match":{"channel":"discord","accountId":"{agentId}"}}
-```
-
-h) **Enable plugin:** Ensure `plugins.entries.enconvo` is `{"enabled":true}`.
-
-**Step 5 — Create agent directory + auth profile:**
-```bash
-mkdir -p ~/.openclaw/agents/{agentId}/agent ~/.openclaw/workspace-{agentId}
-```
-Write (or merge into existing) `~/.openclaw/agents/{agentId}/agent/auth-profiles.json`:
-```json
-{
-  "version": 1,
-  "profiles": {
-    "enconvo:local": {"type":"token","provider":"enconvo","token":"n/a"}
-  },
-  "lastGood": {"enconvo":"enconvo:local"}
-}
-```
-**IMPORTANT:** If auth-profiles.json already exists, READ it first and ADD the `enconvo:local` profile — don't overwrite other profiles.
-
-**Step 6 — Restart gateway:**
-```bash
-pkill -9 -f "openclaw gateway" 2>/dev/null; sleep 1
-openclaw gateway --force &
-# Or: nohup pnpm openclaw gateway run --bind loopback --port 18789 --force > /tmp/openclaw-gateway.log 2>&1 &
-sleep 8 && lsof -i :18789 | head -3
-```
-
-**Step 7 — Confirm:** Print summary of what was configured.
 
 ### Model Switching — Full Workflow
 Switching the default model requires more than `models set`:
@@ -453,7 +355,7 @@ plugins doctor                           Report load issues
 
 ### Key Plugin IDs
 Channels: telegram, whatsapp, discord, imessage, signal, slack, matrix, googlechat, msteams, mattermost, irc, nostr, feishu, line, zalo, zalouser, tlon, bluebubbles, nextcloud-talk, twitch
-Auth: minimax-portal-auth, google-gemini-cli-auth, google-antigravity-auth, copilot-proxy, enconvo
+Auth: minimax-portal-auth, google-gemini-cli-auth, google-antigravity-auth, copilot-proxy
 Features: memory-core, memory-lancedb, device-pair, phone-control, talk-voice, diagnostics-otel, voice-call, open-prose, lobster, llm-task, thread-ownership
 
 ---
@@ -751,6 +653,13 @@ Major security overhaul with 40+ fixes:
 - TTS model-driven provider switching now opt-in by default
 - Sandbox browser containers default to dedicated Docker network
 
+### Security Hardening (v2026.3.8+)
+- `system.run` approved scripts pinned to on-disk file snapshots — post-approval rewrites denied before execution
+- Skills download installs pin validated per-skill tools root — path rebinding cannot redirect writes outside tools dir
+- MS Teams `groupPolicy: "allowlist"` now enforces sender allowlists even when route allowlists are configured
+- Browser SSRF: private-network intermediate redirect hops blocked in strict navigation flows
+- Cron files enforced to owner-only (`0600`), directories to `0700`
+
 ### Heartbeat DM Delivery Control (v2026.2.25+)
 Replace the old boolean DM toggle with explicit policy field:
 ```json
@@ -873,6 +782,9 @@ browser profiles / create-profile / delete-profile / reset-profile
 browser extension / responsebody / waitfordownload / trace
 ```
 
+**v2026.3.8 config:**
+- `browser.relayBindHost` — bind Chrome relay to explicit non-loopback address for WSL2/cross-namespace setups (default: loopback only)
+
 ---
 
 ## Nodes
@@ -931,8 +843,11 @@ webhooks gmail                           Gmail Pub/Sub hooks (via gogcli)
 ```
 acp [--url --token --session --verbose]  Run ACP bridge
 acp client                               Interactive ACP client
+acp --provenance off|meta|meta+receipt   ACP provenance mode (v2026.3.8+)
 ```
 **NEW in v2026.2.26:** ACP agents are now first-class runtimes for thread sessions with `acp` spawn/send dispatch integration, acpx backend bridging, lifecycle controls, startup reconciliation, runtime cleanup, and coalesced thread replies. Thread-bound subagents can now be dispatched via ACP for enhanced realtime capabilities.
+
+**NEW in v2026.3.8:** ACP provenance metadata — agents can retain and report ACP-origin context with session trace IDs. Modes: `off` (disabled), `meta` (ingress metadata only), `meta+receipt` (metadata + visible receipt injection).
 
 ### Skills (Runtime — `openclaw skills`)
 
@@ -966,6 +881,57 @@ health [--json]                          Gateway health
 status [--deep] [--usage]                Channel health + sessions
 logs [--follow] [--limit <n>]            Tail gateway logs
 ```
+
+### Backup (v2026.3.8+)
+```
+backup create [--only-config] [--no-include-workspace]   Create local state archive
+backup verify <path>                     Validate manifest + payload of archive
+```
+**Features:** Full local backup of OpenClaw state (config, workspace, agents). `--only-config` for config-only snapshots. Archives named for date sorting. Guidance shown in destructive flows (reset, uninstall).
+
+### Web Search Configuration (v2026.3.8)
+
+The `web_search` tool is configured via `tools.web.search`. The config path is `tools.web.search`, NOT `tools.webSearch` (which is rejected by schema validation).
+
+**Supported providers (v2026.3.8):** `brave`, `perplexity`, `grok`, `gemini`, `kimi`
+
+**GOTCHA:** Tavily is NOT a valid native provider in v2026.3.8. A community PR (#11978) adds Tavily support — expected in v2026.3.9+. Until then, use the `openclaw-tavily` plugin from ClawHub or set `TAVILY_API_KEY` env var with the plugin installed.
+
+**Default behavior:** If no provider is configured, agents use whatever search grounding their model provider offers (e.g., Gemini uses Google Search grounding natively).
+
+**Setting a provider:**
+```bash
+openclaw config set tools.web.search.provider gemini
+```
+
+**Provider-specific config:**
+```bash
+# Brave with LLM Context mode
+openclaw config set tools.web.search.provider brave
+openclaw config set tools.web.search.brave.mode llm-context
+
+# Perplexity
+openclaw config set tools.web.search.provider perplexity
+# Requires PERPLEXITY_API_KEY env var or config
+
+# Grok
+openclaw config set tools.web.search.provider grok
+# Requires GROK_API_KEY env var or config
+
+# Kimi
+openclaw config set tools.web.search.provider kimi
+```
+
+### New Config Keys (v2026.3.8+)
+
+| Config Path | Type | Description |
+|---|---|---|
+| `talk.silenceTimeoutMs` | number | How long Talk mode waits for silence before auto-sending transcript. Platform default used when unset. |
+| `tools.web.search.provider` | string | Web search provider: `brave`, `perplexity`, `grok`, `gemini`, `kimi`. NOT `tavily` in v2026.3.8. |
+| `tools.web.search.brave.mode` | string | Set to `"llm-context"` to use Brave's LLM Context endpoint (returns extracted grounding snippets with source metadata instead of raw search results). |
+| `browser.relayBindHost` | string | Bind Chrome relay to non-loopback address for WSL2/cross-namespace setups. Default: loopback only. |
+
+**TUI theme (v2026.3.8+):** Auto-detects light terminal backgrounds via `COLORFGBG` and picks a WCAG AA-compliant light palette. Override with `OPENCLAW_THEME=light|dark`.
 
 ### Other
 ```
@@ -1204,16 +1170,609 @@ clawhub update --all
 | ACP agent won't initialize in thread | Missing startup reconciliation config | Ensure agent has `subagents.allowAgents` includes the ACP agent ID |
 | Thread-bound subagent spawns to wrong channel | ACP dispatch not honoring thread context | Check `acp` config in agent workspace and verify thread session metadata |
 | Bindings command errors with "account not found" | Plugin registry hasn't populated account IDs | Run `openclaw plugins doctor` to check plugin health and retry bindings command |
-| EnConvo agent "No API key found for provider enconvo" | Missing `enconvo:local` auth profile | Add `{"type":"token","provider":"enconvo","token":"n/a"}` to agent's `auth-profiles.json` + `lastGood.enconvo` |
-| EnConvo agent returns empty/502 | Proxy not running | Start: `nohup node ~/.claude/skills/enconvo-openclaw-setup/enconvo-proxy.mjs > /tmp/enconvo-proxy.log 2>&1 &` then check: `curl -s http://127.0.0.1:54536/health` |
-| EnConvo agent returns garbled response | Provider baseUrl points to EnConvo directly instead of proxy | Fix: `baseUrl` must be `http://127.0.0.1:54536/v1` (proxy), not `http://localhost:54535` |
-| EnConvo curl works but OpenClaw agent fails | Proxy or EnConvo not running, or model ID mismatch | Test proxy: `curl -s -X POST http://127.0.0.1:54536/v1/chat/completions -H "Content-Type: application/json" -d '{"model":"{ext}/{cmd}","messages":[{"role":"user","content":"test"}]}'` |
 | **BREAKING** Node exec approval fails (v2026.3.1+) | Approval payloads now require `systemRunPlan` | Add `systemRunPlan` to node `host=node` approval requests |
 | **BREAKING** Node `system.run` path mismatch (v2026.3.1+) | Commands now pinned to canonical `realpath` | Update allowlists/tests to use canonical paths (e.g. `/usr/bin/tr` not `tr`) |
 | OpenAI streaming fails silently (v2026.3.1+) | WebSocket transport is now default for OpenAI | Set `params.openaiWsWarmup: false` per-model if WS issues; or configure `transport: "sse"` to force SSE |
 | Gateway WS insecure on private network (v2026.3.1+) | Plaintext `ws://` now loopback-only by default | Set `OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1` for private network access |
 | Cron job runs at ~1/3 of configured timeout (v2026.3.1+) | Stale CLI session ID reused | Fixed in v2026.3.1 — isolated cron runs use fresh watchdog profiles |
 | `cron run` returns 0 on failure | Exit code was always 0 | Fixed in v2026.3.1 — returns exit 1 for non-run/error outcomes |
+
+---
+
+## What's New in v2026.4.24–4.27
+
+### Breaking / Noteworthy Defaults
+- **Discord group/channel reply visibility default = silent** (v2026.4.27): Group/channel replies are private by default unless the agent explicitly uses the message tool. Always-on rooms can lurk without leaking automatic finals, blocks, previews, or status reactions. Restore legacy auto-posting with `messages.groupChat.visibleReplies: "automatic"`.
+- **`/reset` and `/new` no longer fall through** (v2026.4.27): Bare `/reset` / `/new` stop after reset hooks acknowledge — no empty provider call. `/reset <message>` and `/new <message>` still seed the next turn.
+- **WebChat New Session button now confirms** (v2026.4.27): Toolbar New Session button asks for confirmation before dispatching `/new`. Typed `/new` and `/reset` commands stay immediate.
+- **`session.maintenance.rotateBytes` deprecated** (v2026.4.27): Auto-rotation of oversized `sessions.json` removed. `openclaw doctor --fix` strips the ignored key.
+- **Discord interaction listener owned by OpenClaw** (v2026.4.27): Carbon interaction listener handed off async. Compaction or long session locks no longer trip listener timeouts.
+- **CLI parent commands return exit 0** (v2026.4.27): `openclaw <parent>` (memory, channels, plugins, approvals, devices, cron, mcp) without subcommand now prints help and exits 0 (was 1). Fixes shell `&&` chains and pnpm wrappers.
+
+### New Features
+
+**Providers / Models:**
+- **DeepInfra bundled provider** (v2026.4.27): `DEEPINFRA_API_KEY` onboarding, dynamic OpenAI-compatible model discovery, image generation/editing, image/audio media understanding, TTS, text-to-video, memory embeddings.
+- **Cerebras bundled plugin** (v2026.4.26): Onboarding, static model catalog, manifest-owned endpoint metadata.
+- **Tencent Yuanbao channel** (v2026.4.27): External plugin (`openclaw-plugin-yuanbao`) registered in official channel catalog. WebSocket bot DMs and group chats.
+- **QQBot full group chat** (v2026.4.27): History tracking, @-mention gating, activation modes, per-group config, FIFO message queue, C2C `stream_messages` streaming, unified `sendMedia` with chunked upload.
+- **Codex Computer Use** (v2026.4.27): `/codex computer-use status/install`, marketplace discovery, optional auto-install, fail-closed MCP server checks before Codex-mode turns.
+- **Matrix encryption setup** (v2026.4.26): `openclaw matrix encryption setup` enables E2EE, bootstraps recovery, prints verification status from one flow.
+- **Claude Code migration importer** (v2026.4.26): `openclaw migrate` with plan/dry-run/JSON, pre-migration backup, archive-only reports. Imports Claude Code/Desktop instructions, MCP servers, skills, command prompts. Bundled Hermes importer for config, memory/plugin hints, model providers, MCP, skills, credentials.
+
+**Gateway / Security:**
+- **Operator-managed outbound proxy** (v2026.4.27): `proxy.enabled` + `proxy.proxyUrl` / `OPENCLAW_PROXY_URL` with strict `http://` forward-proxy validation, loopback-only Gateway bypass, cleanup on exit.
+- **Sandbox GPU passthrough** (v2026.4.27): Opt-in `sandbox.docker.gpus` for Docker sandbox containers when host Docker supports `--gpus`.
+- **`trustedProxy.allowLoopback`** (v2026.4.27): Explicit support for same-host loopback reverse proxies. Loopback trusted-proxy auth fails closed by default.
+- **`models.pricing.enabled`** (v2026.4.27): Set false to skip startup OpenRouter and LiteLLM pricing-catalog fetches. Useful for offline / restricted-network installs.
+
+**Memory:**
+- **`memorySearch.inputType`** (v2026.4.26): Optional `inputType`, `queryInputType`, `documentInputType` for asymmetric embedding endpoints. Includes direct query embeddings + provider batch indexing.
+- **Ollama retrieval query prefixes** (v2026.4.26): Model-specific prefixes for `nomic-embed-text`, `qwen3-embedding`, `mxbai-embed-large` queries. Document batches unchanged.
+- **`memorySearch.recallMaxChars`** (v2026.4.27): Bound memory recall embedding queries. Auto-recall now prefers the latest user message over channel prompt metadata. Helps small Ollama embedding models avoid context-length failures.
+
+**Telegram / Channels:**
+- **`--thread-id` for cron** (v2026.4.27): `openclaw cron add` / `cron edit` accept `--thread-id` for Telegram forum topic delivery preservation across scheduled announcements.
+- **Native typing cue on inbound** (v2026.4.27): Best-effort typing cue immediately after inbound accept, before queueing/compaction/model/tool work starts. Shows liveness on slow pre-dispatch turns.
+- **TTS → BlueBubbles voice memo** (v2026.4.27): Pre-transcoded MP3 → opus-in-CAF (mono, 24 kHz) on macOS so iMessage renders TTS as native voice-memo bubble (proper duration + waveform UI). Opt-in via `tts.voice.preferAudioFileFormat`.
+- **Per-WhatsApp-group system prompts** (v2026.4.27): `channels.whatsapp.accounts.<id>.groups.<id>.systemPrompt` and `direct.<id>.systemPrompt` forwarded as `GroupSystemPrompt` (`"*"` wildcard supported).
+
+**Compaction / Sessions:**
+- **`compaction.maxActiveTranscriptBytes` preflight trigger** (v2026.4.26): Opt-in. Runs normal local compaction when active JSONL grows too large. Successful compaction moves future turns onto a smaller successor file instead of raw byte-splitting.
+- **`compaction.memoryFlush.model` override** (v2026.4.27): Use exact override (e.g. `ollama/qwen3:8b`) without inheriting active session fallback chain. Lets local housekeeping avoid paid conversation models.
+
+### Key Fixes (highlights)
+- **DeepSeek V4 reasoning replay** (v2026.4.27): `reasoning_content` backfilled on plain assistant replay messages, not just tool-call turns. Fixes thinking sessions with prior tool use failing follow-up requests.
+- **Slack auto-reply leak** (v2026.4.27): Fully consumed text reset triggers like `new session` no longer leak into the fresh model turn.
+- **Slack Socket Mode timeouts** (v2026.4.27): 15s pong timeout default + new `clientPingTimeout` / `serverPingTimeout` / `pingPongLoggingEnabled` overrides. Stale-websocket handling decoupled from app-event health heuristics.
+- **WebChat New Session race** (v2026.4.27): Pending run + typing state attached to the active client run. Unowned final/inject/announce events no longer unlock unrelated active runs.
+- **WebChat large attachment crash** (v2026.4.27): Lit state no longer holds large attachment payloads. Object URL previews + send-time payload serialization. Fixes `RangeError: Maximum call stack size exceeded` on PDF/image uploads.
+- **Telegram polling watchdog token failures** (v2026.4.27): Fail fast when Telegram rejects startup `getMe` with 401. Surface as token auth failure instead of misleading `deleteWebhook` cleanup error.
+- **Telegram `/bot<TOKEN>` apiRoot fix** (v2026.4.27): Normalize accidental full-token `apiRoot` values at runtime. `openclaw doctor --fix` strips the suffix.
+- **Cron Telegram thread routing** (v2026.4.27): Session-derived Telegram topic thread IDs preserved when isolated cron explicitly targets parent chat. Bare chat targets stay in active forum topic.
+- **Cron agentId inference** (v2026.4.27): `cron.add` infers creating session's agentId when omitted. Scheduled agentTurn jobs route to session agent.
+- **Cron local provider preflight** (v2026.4.27): Probe local Ollama / OpenAI-compatible endpoints before isolated cron turns. Records unreachable as skipped, caches dead-endpoint probes.
+- **CLI parent commands exit 0** (v2026.4.27): `openclaw memory` / `channels` / `plugins` / etc. without subcommand prints help and exits 0.
+- **Memory pre-compaction flush prompts** (v2026.4.27): Kept runtime-only. Session transcripts and `chat.history` no longer expose them as normal user turns.
+- **Plugin runtime mirror** (v2026.4.27): Reuse unchanged bundled plugin runtime mirrors instead of rebuilding on every load. Cuts I/O on slow storage. Restart no longer reinstalls full retained dependency set when one is absent.
+- **Auto-reply pending tool-result drain** (v2026.4.27): Bounded with progress-aware idle timeout. Never-settling tool tasks no longer leave session active forever. Slow healthy deliveries can still drain.
+- **Backup excludes plugin `node_modules`** (v2026.4.27): Skips installed plugin dependency trees but keeps manifests + source files. Avoids rebuildable npm payload bloat.
+- **OTEL diagnostic events** (v2026.4.27): Privacy-safe model-call request payload bytes, streamed response bytes, first-response latency, total duration captured in events, plugin hooks, stability snapshots, OTEL spans/metrics. Raw model content not logged.
+
+### New Config Keys (v2026.4.24–4.27)
+| Config Path | Type | Description |
+|---|---|---|
+| `proxy.enabled` | boolean | Enable operator-managed outbound proxy routing |
+| `proxy.proxyUrl` (or `OPENCLAW_PROXY_URL` env) | string | Forward proxy URL (must be `http://`) |
+| `sandbox.docker.gpus` | string | GPU passthrough for Docker sandbox containers |
+| `models.pricing.enabled` | boolean | Skip startup OpenRouter/LiteLLM pricing fetches |
+| `messages.groupChat.visibleReplies` | string | `"silent"` (default v2026.4.27) or `"automatic"` |
+| `tts.voice.preferAudioFileFormat` | string | Opt-in opus-in-CAF for iMessage native voice memo |
+| `agents.defaults.compaction.maxActiveTranscriptBytes` | number | Preflight trigger for transcript rotation |
+| `agents.defaults.compaction.memoryFlush.model` | string | Override flush model without inheriting session fallback chain |
+| `memorySearch.inputType` / `queryInputType` / `documentInputType` | string | Asymmetric embedding endpoint hints |
+| `memorySearch.recallMaxChars` | number | Cap memory recall embedding query size |
+| `streaming.preview.toolProgress` | boolean | Stream tool-progress into Matrix preview edits (default true) |
+| `channels.slack.socketMode.clientPingTimeout` | number | Slack pong timeout (default 15s) |
+| `channels.slack.socketMode.serverPingTimeout` | number | Server ping timeout |
+| `channels.slack.socketMode.pingPongLoggingEnabled` | boolean | Enable ping/pong logging |
+| `channels.whatsapp.accounts.<id>.groups.<id>.systemPrompt` | string | Per-WhatsApp-group system prompt |
+| `channels.whatsapp.accounts.<id>.direct.<id>.systemPrompt` | string | Per-direct-chat system prompt |
+
+### New Troubleshooting Entries (v2026.4.24–4.27)
+| Symptom | Cause | Fix |
+|---|---|---|
+| Discord group replies stopped showing automatic finals/blocks/previews | v2026.4.27 default flipped to silent | Set `messages.groupChat.visibleReplies: "automatic"` to restore auto-posting |
+| Bare `/reset` produces empty model reply | Pre-v2026.4.27 fell through to provider call | Upgrade to v2026.4.27+; use `/reset <message>` to seed next turn |
+| WebChat New Session button instantly resets | Pre-v2026.4.27 dispatched immediately | Upgrade — toolbar button now confirms first |
+| `openclaw memory` / `channels` returns exit 1 in `&&` chains | Pre-v2026.4.27 missing-subcommand exit code | Upgrade — parent commands exit 0 with help text |
+| `sessions.json` rotation backups still appearing | `session.maintenance.rotateBytes` deprecated | Run `openclaw doctor --fix` to strip ignored key |
+| DeepSeek V4 follow-up fails with missing reasoning content | Pre-v2026.4.27 backfill only ran on tool-call turns | Upgrade to v2026.4.27+ |
+| Telegram bot shows `deleteWebhook` cleanup error on startup with bad token | Misleading 401 surface | v2026.4.27 reports as token auth failure instead |
+| WebChat `RangeError: Maximum call stack size exceeded` on large file upload | Lit state held large attachment payloads | Upgrade to v2026.4.27+ |
+| Cron job lost Telegram forum topic on next run | Session-derived thread ID overrode explicit target | Upgrade to v2026.4.27+; use `--thread-id` to pin explicit topic |
+| Slack stale-websocket reconnect storm | Pong timeout coupled to app-event heuristics | v2026.4.27 default 15s + `clientPingTimeout` override |
+| Always-on Discord channel leaking automatic replies | v2026.4.27 default change | Either upgrade and rely on silent default, or set `messages.groupChat.visibleReplies: "automatic"` for legacy behavior |
+| Codex `gpt-5.4-mini` fails through Codex OAuth | OAuth route doesn't support that model | v2026.4.27 suppresses the row with API-key-route hint; use direct `openai/gpt-5.4-mini` |
+| Auto-recall using channel prompt metadata instead of latest user message | Pre-v2026.4.27 priority order | Upgrade — latest user message preferred; tune `recallMaxChars` for small Ollama embeds |
+
+---
+
+## What's New in v2026.4.22–4.23
+
+### Breaking / Noteworthy Defaults
+- **Codex CLI auth import removed** (v2026.4.22): Onboarding and provider discovery no longer copy `~/.codex` OAuth material into agent auth stores. Use browser login or device pairing instead.
+- **OpenAI image gen routes through Codex OAuth** (v2026.4.23): `openai/gpt-image-2` now works without `OPENAI_API_KEY` when an `openai-codex` profile is active. The provider tries Codex OAuth first before falling back to public OpenAI API routes.
+- **Plain OpenAI uses native `web_search`** (v2026.4.22): Direct OpenAI Responses models automatically use OpenAI's native `web_search` tool when web search is enabled and no managed search provider is pinned. Explicit Brave/Perplexity/etc. still take precedence.
+- **GPT-5 prompt overlay is shared** (v2026.4.22): Moved from OpenAI plugin to shared provider runtime. Toggle via `agents.defaults.promptOverlays.gpt5.personality` — applies across OpenAI, OpenRouter, OpenCode, Codex, etc.
+
+### New Features
+
+**Providers / Models:**
+- **xAI multimodal** (v2026.4.22): `grok-imagine-image` / `grok-imagine-image-pro` for image gen + edits, six live xAI voices, MP3/WAV/PCM/G.711 TTS, `grok-stt` audio transcription, realtime STT for Voice Call streaming.
+- **Voice Call streaming STT** (v2026.4.22): Now includes Deepgram, ElevenLabs, and Mistral alongside OpenAI/xAI. ElevenLabs adds Scribe v2 batch transcription for inbound media.
+- **OpenRouter image generation** (v2026.4.23): Image gen + reference-image edits via `image_generate` using `OPENROUTER_API_KEY`.
+- **Image generation hints** (v2026.4.23): Agents can now request quality, output format, background, moderation, compression, and user hints through the `image_generate` tool.
+- **Tencent Cloud provider** (v2026.4.22): Bundled plugin with TokenHub onboarding, `hy3-preview` model catalog, tiered Hy3 pricing.
+- **Bedrock Mantle Claude Opus 4.7** (v2026.4.22): Mantle's Anthropic Messages route with provider-owned bearer-auth streaming.
+- **Codex `gpt-5.5` synthetic row** (v2026.4.23): When Codex catalog discovery omits it, OpenClaw now synthesizes the `openai-codex/gpt-5.5` OAuth row so cron and subagent runs don't fail with `Unknown model` while authenticated. **Important:** This means `openai-codex/gpt-5.5` may now work again as default model — you no longer need to swap to `gpt-5.4` if it was just unavailable due to catalog drift.
+- **Local embedding context size** (v2026.4.23): `memorySearch.local.contextSize` (default 4096) for tuning local embeddings on constrained hosts.
+- **Pi 0.70.0 + GPT-5.5 catalog** (v2026.4.23): Bundled Pi packages updated; OpenAI/Codex catalogs now use Pi's upstream `gpt-5.5` metadata.
+
+**Agents / Tools:**
+- **Per-call `timeoutMs` for media tools** (v2026.4.23): Agents can extend provider request timeouts for individual image/video/music/TTS generations without changing global config.
+- **Forked context for `sessions_spawn`** (v2026.4.23): Optional flag lets a child inherit the requester transcript instead of starting clean.
+- **Tokenjuice** (v2026.4.22): Opt-in plugin compacting noisy `exec`/`bash` results in Pi embedded runs.
+- **`sessions_list` filters** (v2026.4.22): Mailbox-style filtering by label, agent, search; visibility-scoped derived titles + last-message previews.
+- **`/export-trajectory`** (v2026.4.22): Default-on local trajectory capture; bundles redacted transcripts, runtime events, prompts, metadata, artifacts for reproducible debugging.
+- **`/models add <provider> <modelId>`** (v2026.4.22): Register a model from chat without restarting the gateway.
+- **TUI local embedded mode** (v2026.4.22): Run terminal chats without a Gateway while keeping plugin approval gates enforced.
+- **Onboarding auto-installs plugins** (v2026.4.22): First-run setup now installs missing provider/channel plugins automatically.
+- **`Runner:` field in `/status`** (v2026.4.22): Reports whether session runs on embedded Pi, CLI-backed provider, or ACP harness (e.g. `codex (acp/acpx)`).
+
+**Channels:**
+- **WhatsApp `replyToMode`** (v2026.4.22): Configurable native reply quoting; per-group/per-direct `systemPrompt` forwarded as `GroupSystemPrompt` (supports `"*"` wildcard) under `channels.whatsapp.accounts.<id>.{groups,direct}`.
+- **WeCom channel plugin** (v2026.4.22): Surfaced during setup with refreshed display name/description.
+- **Telegram media reply markdown parsing** (v2026.4.23): Remote markdown image syntax `![...](...)` is now parsed into outbound media payloads instead of falling back to plain-text URLs.
+- **WhatsApp outbound media unification** (v2026.4.23): Direct sends and auto-replies use the same media normalization path.
+
+**Codex Harness:**
+- **`/status` shows active harness id** (v2026.4.23): Embedded harness selection pinned per session; non-PI harness ids like `codex` shown in `/status`. Legacy transcripts stay on PI until `/new` or `/reset`.
+- **Native `request_user_input` routing** (v2026.4.23): Prompts return to originating chat; queued follow-up answers preserved.
+- **Codex tool/MCP approvals through OpenClaw** (v2026.4.22+): Codex-tagged MCP tool approval elicitations route through OpenClaw plugin approvals.
+
+**Memory:**
+- **CLI `local` embedding provider** (v2026.4.23): Standalone `openclaw memory status/index/search` can now resolve local embeddings just like the gateway runtime (declared in memory-core manifest).
+- **Root memory canonicalization** (v2026.4.23): Doctor now canonicalizes root durable memory on `MEMORY.md`; lowercase `memory.md` no longer treated as runtime fallback. `--fix` merges split-brain root files with backup.
+- **QMD startup repair** (v2026.4.23): Stale managed QMD collections recreated when name already exists, so root memory narrows back to `MEMORY.md`.
+
+**Macro / Other:**
+- **macOS Voice Wake** (v2026.4.22): Talk Mode now supports voice wake on macOS.
+- **`claude-cli` warm stdio** (v2026.4.22): Default Claude CLI runs use warm stdio sessions; resume from stored Claude session after gateway restart/idle.
+- **Dreaming runs without heartbeat** (v2026.4.23): Managed dreaming cron decoupled from heartbeat; runs as isolated lightweight agent turn even when heartbeat is disabled. Doctor `--fix` migrates stale main-session dreaming jobs.
+- **Failover classifies undici/Codex sentinels as `timeout`** (v2026.4.22): Bare transport failures (`terminated`, `UND_ERR_SOCKET`, etc.) and Codex `Request failed` sentinel now enter the configured fallback chain instead of surfacing as unclassified errors.
+
+### Security Hardening (v2026.4.23 — large batch)
+- Gateway agent-driven `gateway config.apply/patch` fail closed except for narrow allowlist of agent-tunable prompt/model/mention-gating paths
+- Webhook `SecretRef` re-resolved per request — `secrets reload` now revokes immediately
+- Teams shared Bot Framework audience tokens require verified `appid`/`azp`
+- Anthropic CLI `bypassPermissions` derived from existing YOLO exec policy (no silent fallback)
+- Android cleartext gateway requires loopback only; `.local`/dotless hostnames no longer treated as safe cleartext
+- Pairing requires private-IP/loopback hosts for cleartext mobile pairing
+- ACPX OpenClaw tools bridge no longer lists/invokes owner-only tools (e.g. `cron`)
+- QQBot `/bot-approve` requires framework auth
+- Discord native slash-command channel policy honors owner/member restrictions
+- Android `ASK_OPENCLAW` intents only prefill draft, never auto-send
+
+### Key Fixes (highlights)
+- **WhatsApp duplicate cron sends** (v2026.4.23): In-memory active-delivery claim prevents concurrent reconnect drain from re-driving same pending entry. Fixes 7-12x duplicate sends after 30-min inbound-silence watchdog.
+- **CLI streaming state preserved during CLI-backed runs** (v2026.4.22+): WebChat keeps visible response state until the backend finishes.
+- **Webchat image attachments preserved for text-only models** (v2026.4.23): Offloaded as media refs instead of dropped, so configured image tools can still inspect originals.
+- **OpenAI/Codex transcript replay** (v2026.4.23): No longer synthesizes missing tool results (preserved on Anthropic/Gemini/Bedrock).
+- **Cache tokens included in context %** (v2026.4.22): Footer no longer shows `0% ctx` while `/status` reports substantial use.
+- **`models auth login` merges defaults** (v2026.4.22): Re-authenticating an OAuth provider no longer wipes other providers' aliases/per-model params (use `replaceDefaultModels` to opt into replace).
+- **Kimi tool_call IDs preserved** (v2026.4.22): Stop strict-sanitizing `functions.<name>:<index>` IDs on OpenAI-compatible transport — fixes multi-turn agentic flows breaking after 2-3 rounds.
+- **Stainless SDK Retry-After capped** (v2026.4.22): Long retry windows surface immediately for OpenClaw failover instead of blocking.
+- **Config `--merge` and `--replace`** (v2026.4.22): `config set --merge` for additive provider model allowlist updates; `--replace` for intentional full clobbers.
+
+### New Config Keys (v2026.4.22–4.23)
+| Config Path | Type | Description |
+|---|---|---|
+| `agents.defaults.promptOverlays.gpt5.personality` | boolean | Global friendly-style toggle for GPT-5 prompt overlay (was OpenAI-plugin-only) |
+| `channels.whatsapp.accounts.<id>.groups.<id>.systemPrompt` | string | Per-WhatsApp-group system prompt forwarded as `GroupSystemPrompt` |
+| `channels.whatsapp.accounts.<id>.direct.<id>.systemPrompt` | string | Per-direct-chat system prompt forwarded as `GroupSystemPrompt` |
+| `channels.whatsapp.replyToMode` | string | Configurable native WhatsApp reply quoting mode |
+| `memorySearch.local.contextSize` | number | Local embedding context size (default 4096) |
+| `tools.exec.allowPrivateNetwork` (per-provider) | boolean | Opt-in for private-network image gen endpoints (LocalAI, etc.) |
+
+### New Troubleshooting Entries (v2026.4.22–4.23)
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `Unknown model: openai-codex/gpt-5.5` even though account is authenticated | Codex catalog discovery omitted the row pre-v2026.4.23 | v2026.4.23 synthesizes the `gpt-5.5` OAuth row when discovery skips it. Upgrade and the model becomes available again. |
+| `openai/gpt-image-2` fails with no `OPENAI_API_KEY` | Image gen previously required API-key auth path | v2026.4.23 routes through Codex OAuth when an `openai-codex` profile is active |
+| `~/.codex` OAuth material copied into agent auth stores | Codex CLI auth import was on by default | v2026.4.22 removes import path. Use browser login or device pairing |
+| `models auth login` wipes other providers' model aliases | Default-model addition replaced full map | Fixed v2026.4.22 — additions merge by default. Use `replaceDefaultModels` for intentional clobber |
+| WhatsApp cron sends duplicate 7-12x after silence watchdog | Reconnect drain re-drove pending entries during live delivery | Fixed v2026.4.23 — in-memory active-delivery claim added |
+| Multi-turn Kimi tool calls break after 2-3 rounds | Strict sanitization mangled `functions.<name>:<index>` IDs | Fixed v2026.4.22 — Moonshot now opts out via `sanitizeToolCallIds: false` in OpenAI-compat transport |
+| Footer shows `0% ctx` but `/status` reports high usage | Cache-read/write tokens excluded from message footer | Fixed v2026.4.22 |
+| Telegram group images sent as plain-text URLs | Markdown image syntax not parsed into outbound media | Fixed v2026.4.23 — `![...](...)` now produces media payloads |
+| OpenAI/Codex replay synthesizes missing tool results | Synthetic repair was applied across all providers | Fixed v2026.4.23 — only Anthropic/Gemini/Bedrock get synthetic repair now |
+| `lowercase memory.md` overrides root MEMORY.md | Doctor previously treated lowercase as runtime fallback | Fixed v2026.4.23 — root canonicalizes on `MEMORY.md`; `--fix` merges with backup |
+| Long Stainless SDK `Retry-After` blocks failover | 60s+ retry sleeps weren't capped | Fixed v2026.4.22 — capped, surfaces for OpenClaw failover |
+
+---
+
+## What's New in v2026.4.5–4.21
+
+### Breaking / Noteworthy Defaults
+- **Plugins require matching host** (v2026.4.10+): Bundled plugins now declare a minimum OpenClaw version. A gateway older than the plugin refuses to load that plugin with `plugin requires OpenClaw >=X.Y.Z`. Always upgrade the core and restart the gateway in one pass — running `openclaw update --yes` followed by `openclaw gateway stop && openclaw gateway start` avoids the transient validation failure.
+- **Default Anthropic model = Claude Opus 4.7** (v2026.4.15): Anthropic selections, `opus` alias, Claude CLI defaults, and bundled image understanding all default to `claude-opus-4.7`. Opus 4.7 also supports a new `xhigh` reasoning effort that is separate from `adaptive`.
+- **Default image generator = `gpt-image-2`** (v2026.4.21): Bundled OpenAI image provider and live smoke tests default to `gpt-image-2`; 2K/4K OpenAI size hints are now advertised.
+- **Dreaming storage default = `separate`** (v2026.4.15): `dreaming.storage.mode` defaults to `separate` — dream phase blocks now land in `memory/dreaming/{phase}/YYYY-MM-DD.md` instead of being injected into daily memory files. Opt back in with `plugins.entries.memory-core.config.dreaming.storage.mode: "inline"`.
+- **OpenAI Codex canonical alias** (v2026.4.14): `openai-codex/gpt-5.4-codex` is now a runtime alias for `openai-codex/gpt-5.4`. Per-model overrides still work on either id.
+- **Config `$schema` preservation** (v2026.4.15): Partial config rewrites preserve a root-authored `$schema` field instead of stripping or rewriting it. Safe to pin in `openclaw.json`.
+- **Enforced owner identity for owner-only commands** (v2026.4.21): When `enforceOwnerForCommands=true` and `commands.ownerAllowFrom` is unset, non-owner senders with wildcard `allowFrom` are no longer treated as owners. Set explicit `commands.ownerAllowFrom` if you relied on the permissive fallback.
+- **`browser.cdpUrl` now redacted** (v2026.4.14): Base `browser.cdpUrl` and per-profile `browser.profiles.*.cdpUrl` are redacted in `config.get` output and availability errors. Safe to inspect config.
+
+### New Features
+
+**Providers / Models:**
+- **LM Studio provider** (v2026.4.12): Bundled provider with onboarding, runtime model discovery, stream preload, and memory-search embeddings for local/self-hosted OpenAI-compatible models.
+- **Codex as dedicated provider** (v2026.4.12): `codex/gpt-*` uses Codex-managed auth, native threads, model discovery, and compaction. `openai/gpt-*` stays on the normal OpenAI provider path.
+- **OpenAI `gpt-5.4-pro`** (v2026.4.14): Forward-compat support with Codex pricing/limits.
+- **Claude Opus 4.7 `xhigh` reasoning** (v2026.4.18): New highest-reasoning mode, distinct from `adaptive`.
+- **Google Gemini TTS** (v2026.4.15): Bundled `google` plugin now includes TTS with voice selection, WAV reply output, and PCM telephony output.
+- **GitHub Copilot memory embeddings** (v2026.4.15): Dedicated Copilot embedding provider for memory search; plugins can reuse the transport.
+- **Moonshot Kimi K2.6** (v2026.4.20): New default for Moonshot setup, web search, and media understanding. `thinking.keep = "all"` supported on `kimi-k2.6`.
+- **LanceDB cloud storage** (v2026.4.15): `memory-lancedb` supports remote object-storage indexes.
+- **macOS MLX speech provider** (v2026.4.12): Experimental local Talk Mode provider with utterance playback and interruption handling.
+
+**Agents / Memory:**
+- **Active Memory plugin** (v2026.4.12): Dedicated memory sub-agent that runs right before the main reply — auto-pulls preferences and prior context without manual "remember this" prompts. Configurable message/recent/full modes with `/verbose` inspection. Docs: https://docs.openclaw.ai/concepts/active-memory.
+- **Experimental local-model lean mode** (v2026.4.15): Set `agents.defaults.experimental.localModelLean: true` to drop heavyweight default tools (`browser`, `cron`, `message`) for weaker local models.
+- **Subagent registry lazy runtime** (v2026.4.14): Published `dist/agents/subagent-registry.runtime.js` so `runtime: "subagent"` no longer stalls queued.
+- **Streaming watchdog** (v2026.4.15): Client-side `streamingWatchdogMs` (default 30s, `0` to disable) resets the TUI `streaming` indicator to `idle` when deltas stop arriving, so lost final events don't wedge the UI.
+
+**Channels:**
+- **Feishu document-thread sessions** (v2026.4.11): Rich comment parsing, comment reactions, and typing feedback for doc-comment conversations.
+- **Microsoft Teams reactions** (v2026.4.11): Add/list reactions via delegated OAuth while keeping application-auth read paths.
+- **Matrix MSC4357 live markers** (v2026.4.12): Draft previews emit live/typewriter markers for supporting clients.
+- **Mattermost draft preview streaming** (v2026.4.20): Thinking, tool activity, and partial reply all stream into a single draft post that finalizes in place.
+- **Discord auto-archive for threads** (confirmed): `channels.discord.guilds.<id>.channels.<id>.autoArchiveDuration` with `1h`/`1d`/`3d`/`1w`.
+- **Telegram forum topic names in context** (v2026.4.14): Human topic names learned from Telegram service messages appear in agent context, prompt metadata, and plugin hook metadata. Persisted to the Telegram session sidecar so topic names survive restarts.
+- **BlueBubbles per-group `systemPrompt`** (v2026.4.20): Forwarded into inbound context as `GroupSystemPrompt` (supports `"*"` wildcard). BlueBubbles also gets `channels.bluebubbles.sendTimeoutMs` (default 30s, was 10s) for macOS 26 setups, method pinning (`private-api` vs `apple-script`) to prevent silent drops, and a persistent file-backed GUID dedupe so webhook replays after restart don't re-reply.
+- **BlueBubbles catchup** (v2026.4.15): Per-account cursor + `/api/v1/message/query?after=<ts>` replay of missed messages after gateway downtime. Includes `catchup.maxFailureRetries` (default 10) so a malformed message can't wedge the cursor forever.
+- **WhatsApp multi-account hardening** (v2026.4.18): Centralized named-account inbound policy with per-account group activation, scoped session keys, and legacy activation backfill.
+
+**Control / UI:**
+- **Control UI webchat rich bubbles** (v2026.4.11): Media/reply/voice directives render as structured bubbles; new `[embed ...]` tag with external URL gate.
+- **Control UI Overview - Model Auth status card** (v2026.4.15): Shows OAuth token health + provider rate-limit pressure. Backed by a new `models.authStatus` RPC.
+- **Dashboard v2** (earlier, consolidated v2026.4): Overview, chat, config, agent, session views plus command palette and mobile bottom tabs.
+
+**Cron / Tasks:**
+- **Cron state file split** (v2026.4.20): Runtime state lives in `jobs-state.json` so `jobs.json` can be git-tracked cleanly.
+- **Cron `--tools` per-job allowlists** (confirmed): Embedded run tool policy + explicit targeting + internal events all take effect at runtime again.
+- **Opt-in compaction notices** (v2026.4.20): `agents.defaults.compaction.notifyUser: true` sends start and completion messages during context compaction.
+
+**Gateway / Infra:**
+- **`gateway commands.list` RPC** (v2026.4.12): Remote clients can discover runtime-native, text, skill, and plugin commands with serialized argument metadata.
+- **`exec-policy` CLI** (v2026.4.12): New local `openclaw exec-policy show|preset|set` subcommand to sync requested `tools.exec.*` config with the local exec approvals file.
+- **Per-provider `allowPrivateNetwork`** (v2026.4.12): `models.providers.*.request.allowPrivateNetwork` for trusted self-hosted OpenAI-compatible endpoints.
+- **Plugin setup descriptors** (v2026.4.11): Plugin manifests can declare activation and setup descriptors so setup flows describe required auth and pairing without hardcoded core branches.
+- **Bundled plugin platform-native repair** (v2026.4.14): Repackaged Windows installs can recover dependencies packed on another host OS.
+- **Doctor systemd hardening** (v2026.4.14): `openclaw doctor --repair` stops re-embedding dotenv-backed secrets in user systemd units.
+
+### Key Fixes (highlights)
+- **Unknown-tool stream guard always on** (v2026.4.15): Previously `tools.loopDetection.enabled=true` was required; now on by default. Hallucinated/removed tools no longer loop `Tool X not found` until timeout. Per-run override: `tools.loopDetection.unknownToolThreshold` (default 10).
+- **Skills cache invalidation on config write** (v2026.4.15): Removing a bundled skill from `skills.allowBundled` now invalidates per-session `skillsSnapshot` so the model stops calling the disabled tool.
+- **Ollama provider-policy defaults** (v2026.4.20): Implicit local discovery runs before config validation rejects minimal Ollama configs. Chat requests no longer 404 because of stale `ollama/` prefix forwarding (v2026.4.15 fix).
+- **Telegram polling watchdog raised 90s → 120s** (v2026.4.20): Long-running Telegram work no longer trips false stall restarts. Configurable per-account: `channels.telegram.pollingStallThresholdMs`.
+- **Telegram undici dispatcher lifecycle** (v2026.4.18): Every recoverable network error + watchdog trip previously abandoned the dispatcher pool, accumulating hundreds of `api.telegram.org` connections. Fixed with per-origin pool caps and an explicit `close()` lifecycle.
+- **Telegram DM binding survives restarts** (v2026.4.18): Stale ACP DM bindings are dropped on restart; plugin-owned bindings preserved.
+- **Feishu webhook fail-closed** (v2026.4.15): Webhook transport refuses to start without `encryptKey`, rejects unsigned requests instead of accepting them.
+- **Active Memory graceful degradation** (v2026.4.20): When memory recall fails during prompt building, the reply continues without memory context instead of failing the whole turn. Recall timeout ceiling raised to 120s.
+- **Dreaming narrative cleanup** (v2026.4.12+): Transient narrative cleanup retries timed-out deletes; stale dreaming session artifacts cleaned through lock-aware path; narrative session keys isolated per workspace.
+- **OpenAI Codex OAuth stability** (v2026.4.18): External CLI OAuth imports are runtime-only, canonical imported CLI profiles preserved, refresh recovery stable, legacy identity-less main-store OAuth upgrades cleanly.
+- **Gateway/pairing loopback** (v2026.4.20): Loopback shared-secret node-host, TUI, and gateway clients treated as local for pairing, so trusted local tools no longer fail with `pairing required` after reconnect.
+- **Sessions/reset clearing** (v2026.4.20): `/new` and `/reset` now clear auto-sourced model/provider/auth-profile overrides while preserving explicit user selections.
+- **Auto-reply billing classification** (v2026.4.14): Pure billing cooldown fallbacks show billing guidance instead of the generic failure reply.
+- **Claude CLI session expiration** (v2026.4.14): `No conversation found with session ID` now classified as `session_expired` — stale binding clears and recovers next turn.
+- **Third-party context engine tolerance** (v2026.4.15): Plugins whose `info.id` differs from registered slot id are accepted again (v2026.4.14 tightening is relaxed back).
+
+### New Config Keys (v2026.4.5–4.21)
+| Config Path | Type | Description |
+|---|---|---|
+| `agents.defaults.experimental.localModelLean` | boolean | Drop heavyweight default tools (`browser`, `cron`, `message`) for weak local models |
+| `agents.defaults.compaction.notifyUser` | boolean | Opt-in start + completion notices during context compaction (note: some earlier mentions called this an alternative path; confirmed as opt-in) |
+| `channels.bluebubbles.sendTimeoutMs` | number | Outbound `/api/v1/message/text` send timeout (default 30s, was 10s). Per-account supported. |
+| `channels.discord.guilds.<id>.channels.<id>.autoArchiveDuration` | string | `1h` \| `1d` \| `3d` \| `1w` — auto-archive for auto-created threads |
+| `channels.matrix.network.dangerouslyAllowPrivateNetwork` | boolean | Honored when creating Matrix clients for private-network homeservers |
+| `channels.telegram.pollingStallThresholdMs` | number | Polling watchdog threshold (default 120s). Per-account supported. |
+| `commands.ownerAllowFrom` | array | Explicit owner identity allowlist when `enforceOwnerForCommands=true` |
+| `dreaming.storage.mode` | string | `separate` (new default) \| `inline`. In `memory-core.config.dreaming.storage`. |
+| `dreaming.timezone` | string | Host-local TZ for dream diary timestamps |
+| `models.providers.*.request.allowPrivateNetwork` | boolean | Per-provider opt-in for private-network request targets |
+| `models.providers.*.models.*.compat.supportsPromptCacheKey` | boolean | OpenAI-compat proxies: forward vs strip `prompt_cache_key` |
+| `plugins.entries.memory-core.config.dreaming.storage.mode` | string | Opt-in `inline` dreaming storage |
+| `plugins.slots.memory` | string | `"none"` to explicitly disable bundled memory-core |
+| `tools.loopDetection.unknownToolThreshold` | number | Per-run unknown-tool retry guard threshold (default 10) |
+| `streamingWatchdogMs` | number | Client-side streaming watchdog (default 30s, `0` to disable) |
+
+### New Troubleshooting Entries (v2026.4.5–4.21)
+| Symptom | Cause | Fix |
+|---|---|---|
+| `plugin requires OpenClaw >=X.Y.Z, but this host is Y.Y.Y` after `openclaw update` | Plugin updated to a version newer than the currently-running gateway | Restart gateway: `openclaw gateway stop && openclaw gateway start`. If the binary didn't upgrade, re-run `openclaw update --yes` and verify with `openclaw --version` |
+| `install.runtime-*.js` module-not-found during plugin update | Stale hashed dist chunks from prior install | v2026.4.12+ prunes stale chunks after npm upgrades; re-run `openclaw update` |
+| Agent reports wrong/old model after Opus 4.7 rollout | Session's `authProfileOverride` pinned to old auth profile | Set `authProfileOverride: null` in `sessions.json` or delete the session |
+| GPT model replies empty on OpenAI with `/think low` | `low` reasoning not supported on GPT-5.4 mini models | v2026.4.14 remaps `low`/`minimal` → `medium` for affected mini models. Upgrade to v2026.4.14+ |
+| Telegram polling shows healthy but messages stop flowing | Transport dispatcher pool leaked sockets on every recoverable error | Upgrade to v2026.4.18+ (bounded keep-alive + strict per-origin pool caps) |
+| `Tool X not found` loop until embedded-run timeout | Disabled bundled skill still cached in session snapshot | v2026.4.15+ invalidates snapshot when `skills.*` config changes. Force a reset: `echo '{}' > ~/.openclaw/agents/<agent>/sessions/sessions.json` |
+| BlueBubbles: 10s `private-api` send aborts on macOS 26 | Default timeout too aggressive | Upgrade to v2026.4.20+ (default 30s) or set `channels.bluebubbles.sendTimeoutMs` explicitly |
+| BlueBubbles: agent replies twice after BB Server restart | Message replays through webhook + gateway lost dedupe state | v2026.4.15+ adds persistent file-backed GUID dedupe — upgrade to recover automatically |
+| Matrix `requireMention` breaks when user types `@displayName` | Display-name mentions weren't matching the gating rule | Fixed v2026.4.14 — accepts visible `@displayName` Matrix URI labels |
+| Ollama chat 404s with `ollama/qwen3:14b-q8_0` | Legacy `ollama/` prefix sent to Ollama API | Fixed v2026.4.15 — prefix is stripped before request |
+| Feishu webhook transport silently starts without `encryptKey` | Fail-open default accepted unsigned requests | v2026.4.15 fail-closes — configure `encryptKey` or transport refuses to start |
+| Dreaming entries render as `confidence: 0.00` | Light-sleep confidence computed from recall-only counts | Fixed v2026.4.12 — uses all recorded short-term signals |
+| Daily memory file dominated by dream phase blocks | `dreaming.storage.mode` was `inline` | v2026.4.15 defaults to `separate`. Set to `inline` to opt back in |
+| `agent.json` rewrites lose custom `$schema` field | Partial config rewrites stripped root `$schema` | Fixed v2026.4.15 — root `$schema` preserved |
+| `models list --probe` reports invalid models as `unknown` | Misclassification of format errors | Fixed v2026.4.15 — returns `format` now |
+| Codex/gpt-5.4 hits `/backend-api/responses` and 404s | Alias removed upstream | Fixed v2026.4.20 — routes through `/backend-api/codex` |
+| `/think off` sends `reasoning.effort: "none"` to GPT reasoning models | Unsupported payload on OpenAI Responses | Fixed v2026.4.20 — disabled reasoning payloads omitted entirely |
+| Kimi reasoning re-enables after `/new` | Stale session `/think` state | v2026.4.20 defaults bundled Kimi thinking to off and normalizes Anthropic-compat `thinking` payloads |
+| TUI stuck on `streaming` after gateway restart | Lost `state: "final"` event | v2026.4.15 adds 30s streaming watchdog (configurable via `streamingWatchdogMs`) |
+| Non-owner senders can trigger owner-only commands | `enforceOwnerForCommands=true` with wildcard `allowFrom` and unset `commands.ownerAllowFrom` | v2026.4.21 requires explicit owner identity — set `commands.ownerAllowFrom` to restore access |
+
+---
+
+## What's New in v2026.3.14–4.2
+
+### Breaking Changes
+- **`x_search` config path** (v2026.4.2): Moved from `tools.web.x_search.*` to `plugins.entries.xai.config.xSearch.*`. Auth moved to `plugins.entries.xai.config.webSearch.apiKey` / `XAI_API_KEY`. Run `openclaw doctor --fix` to migrate.
+- **Firecrawl `web_fetch` config** (v2026.4.2): Moved from `tools.web.fetch.firecrawl.*` to `plugins.entries.firecrawl.config.webFetch.*`. Run `openclaw doctor --fix` to migrate.
+- **`nodes.run` removed** (v2026.3.31): Shell wrapper removed from CLI and agent tools. Use `exec host=node` instead; keep media/location/notify on `nodes invoke`.
+- **Plugin SDK compat shims deprecated** (v2026.3.31): Legacy provider compat subpaths emit migration warnings. Use `openclaw/plugin-sdk/*` entrypoints going forward.
+- **`trusted-proxy` auth** (v2026.3.31): Rejects mixed shared-token configs; local-direct fallback now requires the configured token.
+- **Node commands disabled until pairing** (v2026.3.31): Node commands stay disabled until node pairing is approved (device pairing alone no longer enough).
+- **Qwen `qwen-portal-auth` removed** (v2026.3.28): Migrate to Model Studio with `openclaw onboard --auth-choice modelstudio-api-key`.
+- **Config doctor drops old migrations** (v2026.3.28): Auto-migrations older than two months now fail validation instead of being rewritten.
+- **Exec defaults to YOLO** (v2026.4.2): Gateway/node host exec now defaults to `security=full` with `ask=off`.
+
+### New Features
+
+**Background Tasks** (v2026.3.31–4.2): Full durable task control plane with SQLite-backed ledger. Unifies ACP, subagent, cron, and CLI execution. New `openclaw tasks list|show|cancel` CLI. `/tasks` chat command shows session task board. Task Flow substrate for managed orchestration with durable state tracking.
+
+**New Channels:**
+- **QQ Bot** (v2026.3.31): Bundled channel plugin with multi-account setup, SecretRef-aware credentials, slash commands, reminders, media send/receive.
+- **Microsoft Teams** (v2026.3.24): Migrated to official Teams SDK with streaming 1:1 replies, welcome cards, prompt starters, feedback/reflection, native AI labeling, edit/delete support.
+
+**CLI Changes:**
+- `openclaw config schema` — Print JSON schema for `openclaw.json` (v2026.3.28).
+- `openclaw config set` — Now supports `--ref-provider`, `--batch-file`, and SecretRef builder modes (v2026.4.2).
+- `openclaw skills install/search/update` — ClawHub skills management integrated into main CLI (v2026.3.24+).
+- `openclaw tasks` — Inspect durable background task state (v2026.3.31+).
+- `openclaw plugins inspect` — Replaces `plugins info` (v2026.4.2).
+- `openclaw plugins marketplace` — Browse Claude-compatible plugin marketplaces (v2026.4.2).
+- `openclaw --container <name>` — Run CLI inside a Docker/Podman container (v2026.3.24+).
+- `gateway --cli-backend-logs` — Replaces `--claude-cli-logs` (deprecated alias kept) (v2026.3.28).
+- `hooks install/update` — Deprecated; use `plugins install/update` instead (v2026.4.2).
+
+**Plugins:**
+- `before_tool_call` hooks can now `requireApproval` (v2026.3.28) — plugins can pause tool execution for user approval.
+- `before_agent_reply` hook (v2026.4.2) — plugins can short-circuit LLM with synthetic replies.
+- `before_dispatch` hook (v2026.3.24) — canonical inbound metadata with routed delivery.
+- Plugin marketplace browsing via `plugins marketplace` (v2026.4.2).
+- xAI/Grok: Moved to Responses API with first-class `x_search` (v2026.3.28).
+
+**Agents/Models:**
+- `agents.defaults.params` for global default provider parameters (v2026.4.2).
+- `agents.defaults.compaction.notifyUser` — opt-in compaction start notice (v2026.4.2).
+- `auth.cooldowns.rateLimitedProfileRotations` — configurable retry count for same-provider rate-limit retries (v2026.4.2).
+- Per-job tool allowlists for cron: `openclaw cron --tools` (v2026.4.2).
+- Amazon Bedrock Guardrails support (v2026.4.2).
+- SearXNG web search provider plugin (v2026.4.2).
+- macOS Voice Wake for Talk Mode (v2026.4.2).
+
+**Channels:**
+- Telegram: Configurable `errorPolicy` and `errorCooldownMs` per account/chat/topic (v2026.4.2).
+- WhatsApp: `reactionLevel` guidance for agent emoji reactions; inbound message timestamps in model context (v2026.4.2).
+- Matrix: `blockStreaming` opt-in, `channels.matrix.proxy` config, `historyLimit` for group context, DM `threadReplies` overrides, draft streaming (v2026.3.31).
+- Feishu: Drive comment-event flow with `feishu_drive` comment actions (v2026.4.2).
+- Slack: Native exec approval routing, `upload-file` action (v2026.3.28–3.31).
+- Discord: Voice channel guild/member allowlist enforcement on spoken ingress (v2026.3.31).
+
+**Gateway:**
+- `gateway.webchat.chatHistoryMaxChars` for configurable chat history truncation (v2026.4.2).
+- `/v1/models` and `/v1/embeddings` OpenAI compatibility endpoints (v2026.3.24).
+- MCP: Remote HTTP/SSE server support in `mcp.servers` with auth headers (v2026.3.31).
+
+### New Config Keys (v2026.3.14–4.2)
+| Config Path | Type | Description |
+|---|---|---|
+| `agents.defaults.params` | object | Global default provider parameters |
+| `agents.defaults.compaction.notifyUser` | boolean | Opt-in compaction start notice (default: shown) |
+| `auth.cooldowns.rateLimitedProfileRotations` | number | Same-provider rate-limit retries before fallback |
+| `channels.matrix.proxy` | string | HTTP(S) proxy for Matrix traffic |
+| `channels.matrix.historyLimit` | number | Room history context lines for group triggers |
+| `channels.matrix.blockStreaming` | boolean | Opt-in block streaming for Matrix |
+| `gateway.webchat.chatHistoryMaxChars` | number | Chat history text truncation limit |
+| `plugins.entries.xai.config.xSearch.*` | object | xAI x_search settings (moved from `tools.web.x_search`) |
+| `plugins.entries.firecrawl.config.webFetch.*` | object | Firecrawl web_fetch settings (moved from `tools.web.fetch.firecrawl`) |
+
+### New Troubleshooting Entries (v2026.3.14–4.2)
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `x_search` config rejected after upgrade to v2026.4.2 | Config path moved to plugin-owned path | Run `openclaw doctor --fix` to auto-migrate |
+| Firecrawl `web_fetch` config rejected after upgrade | Config path moved to plugin-owned path | Run `openclaw doctor --fix` to auto-migrate |
+| `nodes.run` command not found | Removed in v2026.3.31 | Use `exec host=node` for shell execution |
+| Exec runs without asking for approval | Default changed to YOLO mode (`ask=off`) in v2026.4.2 | Set `tools.exec.ask: "always"` to restore prompts |
+| Task registry hangs gateway after startup | SQLite maintenance sweep stalling event loop | Fixed in v2026.4.1 |
+| `openclaw gateway stop` leaves loopback pairing errors | Legacy role fallback missing for empty paired-device maps | Fixed in v2026.4.2 |
+| `sessions_spawn` fails with `pairing required` (1008) after v2026.3.31 | Admin-only subagent calls not pinned to `operator.admin` | Fixed in v2026.4.2 |
+| `qwen-portal-auth` OAuth broken | Deprecated in v2026.3.28 | Use `openclaw onboard --auth-choice modelstudio-api-key` |
+
+---
+
+## What's New in v2026.3.12–3.13
+
+### Security (v2026.3.12 — Major Security Release)
+- **Workspace plugins**: Disable implicit workspace plugin auto-load — cloned repos can't execute workspace plugin code without explicit trust (GHSA-99qw-6mr3-36qr)
+- **Exec detection**: Normalize compatibility Unicode and strip invisible formatting code points before obfuscation checks (GHSA-9r3v-37xh-2cf6)
+- **Exec allowlist**: Preserve POSIX case sensitivity, keep `?` within single path segment (GHSA-f8r2-vg7x-gh8m)
+- **Device pairing**: Bootstrap setup codes now short-lived and single-use (v2026.3.13); device-token scopes capped to approved baseline (GHSA-2pwv-x786-56f8)
+- **WebSocket preauth**: Shorten unauthenticated handshake retention, reject oversized pre-auth frames (GHSA-jv4g-m82p-2j93)
+- **Browser.request**: Block persistent browser profile create/delete from write-scoped `browser.request` (GHSA-vmhq-cqm9-6p7q)
+- **Agent spawn**: Reject public spawned-run lineage fields, keep workspace inheritance on internal path (GHSA-2rqg-gjgv-84jm)
+- **Session status**: Enforce sandbox session-tree visibility and agent-to-agent access guards (GHSA-wcxr-59v9-rxr8)
+- **Feishu webhook**: Require `encryptKey` alongside `verificationToken` in webhook mode (GHSA-g353-mgv3-8pcj)
+- **LINE webhook**: Require signatures for empty-event POST probes (GHSA-mhxh-9pjm-w7q5)
+- **Zalo webhook**: Rate limit invalid secret guesses before auth (GHSA-5m9r-p9g7-679c)
+- **Slack/Teams routing**: Require stable channel/team IDs for allowlist routing; mutable name matching via `dangerouslyAllowNameMatching` break-glass flag
+- **iMessage/remote attachments** (v2026.3.13): Reject unsafe remote attachment paths before spawning SCP
+- **Telegram/webhook auth** (v2026.3.13): Validate secret before reading request bodies
+- **Exec approvals** (v2026.3.12–3.13): Multiple hardening rounds — unwrap `pnpm`/`npm exec`/`npx` runners, fail closed for Ruby/Perl/PowerShell loaders, bind macOS skill trust to both name and path, treat backslash-newline as line continuation
+
+### New Features
+
+**Dashboard v2** (v2026.3.12): Modular overview, chat, config, agent, session views + command palette + mobile bottom tabs + slash commands + search/export/pinned messages.
+
+**Fast Mode** (v2026.3.12): `/fast` toggle for OpenAI GPT-5.4 and Anthropic Claude, with `params.fastMode` mapping to `service_tier` requests. Configurable per-session via TUI, Control UI, and ACP.
+
+**Agents:**
+- `sessions_yield` (v2026.3.12): End current turn immediately, skip queued tool work, carry hidden follow-up payload into next turn.
+
+**Browser** (v2026.3.13):
+- Chrome DevTools MCP attach mode for signed-in live Chrome sessions (`chrome://inspect/#remote-debugging`)
+- Built-in `profile="user"` (logged-in host browser) and `profile="chrome-relay"` (extension relay)
+- Batched actions, selector targeting, delayed clicks for browser act requests
+
+**Channels:**
+- Slack Block Kit: `channelData.slack.blocks` in reply delivery path (v2026.3.12)
+- Slack interactive replies: Opt-in button and select directives via `channels.slack.capabilities.interactiveReplies` (v2026.3.12)
+
+**Models/Plugins** (v2026.3.12): Ollama, vLLM, SGLang moved to provider-plugin architecture with provider-owned onboarding and discovery.
+
+**Docker** (v2026.3.13): `OPENCLAW_TZ` env var to pin gateway/CLI containers to chosen IANA timezone.
+
+### Key Fixes (v2026.3.12–3.13)
+- Ollama: Stop promoting native `thinking`/`reasoning` fields into final assistant text (v2026.3.13)
+- Dashboard v2: Stop reloading full chat history on every live tool result (v2026.3.13)
+- Gateway: Reject unanswered RPC calls after bounded timeout; preserve `lastAccountId`/`lastThreadId` across session resets (v2026.3.13)
+- Config validation: Accept `agents.list[].params`, `tools.web.fetch.readability`, `tools.web.fetch.firecrawl`, `channels.signal.groups`, `discovery.wideArea.domain` (v2026.3.13)
+- Telegram: Thread proxy transport policy into SSRF-guarded file fetches; redact file URLs in error logs (v2026.3.13)
+- Discord: Treat transient `/gateway/bot` failures as transient startup errors; honor raw `guild_id` for allowlists (v2026.3.13)
+- Agents: Classify z.ai `network_error` as retryable; recognize Venice/Poe billing errors for fallback; preserve blank API keys for loopback providers (v2026.3.13)
+- Windows: Bound `schtasks` calls and fall back to Startup-folder; resolve fallback listeners for gateway stop (v2026.3.13)
+
+### New Config Keys (v2026.3.12–3.13)
+| Config Path | Type | Description |
+|---|---|---|
+| `channels.slack.capabilities.interactiveReplies` | boolean | Opt-in Slack button and select reply directives (default: false) |
+| `params.fastMode` | boolean | Per-session fast mode for OpenAI/Anthropic |
+| `channels.zalouser.dangerouslyAllowNameMatching` | boolean | Break-glass for mutable Zalouser group-name matching |
+| `channels.slack.dangerouslyAllowNameMatching` | boolean | Break-glass for mutable Slack channel-name matching |
+| `channels.teams.dangerouslyAllowNameMatching` | boolean | Break-glass for mutable Teams channel-name matching |
+| `OPENCLAW_TZ` | env var | Docker timezone pinning (IANA format) |
+| `agents.list[].params` | object | Per-agent runtime overrides (cacheRetention, temperature, maxTokens) |
+| `tools.web.fetch.readability` | object | Web fetch readability config |
+| `tools.web.fetch.firecrawl` | object | Web fetch Firecrawl config |
+| `channels.signal.groups` | object | Per-group Signal overrides (requireMention, tools, toolsBySender) |
+| `discovery.wideArea.domain` | string | Unicast DNS-SD gateway config |
+| `openclaw gateway status --require-rpc` | CLI flag | Fail hard on RPC probe misses |
+
+### New Troubleshooting Entries (v2026.3.12–3.13)
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Ollama local reasoning model leaks thinking in replies | Native `thinking`/`reasoning` fields promoted to assistant text | Fixed in v2026.3.13 — internal thoughts no longer leak |
+| Dashboard v2 UI freezes during tool-heavy runs | Full chat history reloaded on every live tool result | Fixed in v2026.3.13 |
+| `agents.list[].params` rejected by config validation | Schema didn't accept per-agent runtime overrides | Fixed in v2026.3.13 |
+| `tools.web.fetch.readability` rejected as unrecognized | Schema validation missing for web fetch config | Fixed in v2026.3.13 |
+| `channels.signal.groups` rejected by config validation | Schema didn't support per-group Signal overrides | Fixed in v2026.3.13 |
+| `discovery.wideArea.domain` rejected by config validation | Schema missing for unicast DNS-SD config | Fixed in v2026.3.13 |
+| Slack/Teams allowlists bypassed by channel name changes | Name-based matching allowed mutable IDs | v2026.3.12: Use stable IDs; opt into name matching via `dangerouslyAllowNameMatching` |
+| Telegram inbound media fails on IPv6-broken hosts | SSRF-guarded file downloads didn't retry with IPv4 | Fixed in v2026.3.13 — IPv4 fallback applied |
+| Discord gateway crashes on startup | Plain-text `/gateway/bot` failures treated as fatal | Fixed in v2026.3.13 — treated as transient |
+| Windows `openclaw gateway install` hangs forever | `schtasks` call blocks indefinitely | Fixed in v2026.3.13 — bounded + Startup-folder fallback |
+
+---
+
+## What's New in v2026.3.8–3.11
+
+### Security
+- **Gateway/WebSocket origin validation** (v2026.3.11): Browser-originated connections in `trusted-proxy` mode now enforce origin validation (GHSA-5wcw-8jjv-m286).
+
+### Breaking Changes
+- **Cron/doctor: isolated cron delivery** (v2026.3.11): Cron jobs can no longer notify through ad hoc agent sends or fallback main-session summaries. Run `openclaw doctor --fix` for migration.
+
+### New Features
+- **OpenRouter models** (v2026.3.11): Temporary Hunter Alpha and Healer Alpha entries.
+- **iOS/Home canvas** (v2026.3.11): Bundled welcome screen + docked toolbar replacing floating controls.
+- **macOS/chat UI** (v2026.3.11): Chat model picker, persistent thinking-level selections.
+- **Onboarding/Ollama** (v2026.3.11): First-class Ollama setup with Local or Cloud+Local modes, browser-based cloud sign-in, curated model suggestions.
+- **OpenCode/onboarding** (v2026.3.11): New OpenCode Go provider (Zen and Go treated as one setup).
+- **Memory multimodal** (v2026.3.11): Opt-in multimodal image and audio indexing for `memorySearch.extraPaths` with Gemini `gemini-embedding-2-preview`.
+- **Memory/Gemini embeddings** (v2026.3.11): `gemini-embedding-2-preview` support with configurable output dimensions.
+- **Discord/auto threads** (v2026.3.11): `autoArchiveDuration` channel config (1h, 1d, 3d, 1w).
+- **ACP/sessions_spawn** (v2026.3.11): Optional `resumeSessionId` for `runtime: "acp"` to resume existing ACPX/Codex conversations.
+- **Gateway/node pending work** (v2026.3.11): Narrow in-memory pending-work queue primitives.
+- **Exec/child commands** (v2026.3.11): `OPENCLAW_CLI` env var marks child command environments.
+- **Git/runtime state** (v2026.3.11): `.dev-state` file auto-ignored.
+
+### Key Fixes (v2026.3.9–3.11)
+- Agents/text sanitization: strip leaked model control tokens (`<|...|>` and full-width variants) from user-facing text (GLM-5, DeepSeek).
+- Discord/reply chunking: resolve effective `maxLinesPerMessage` config.
+- Models/Kimi Coding: send tools in native Anthropic format again.
+- Telegram/outbound HTML: chunk long HTML messages properly.
+- Signal/config schema: accept `channels.signal.accountUuid` in strict validation.
+- Telegram/config schema: accept `channels.telegram.actions.editMessage` and `createForumTopic`.
+- Discord/config typing: expose channel-level `autoThread` on guild-channel config type.
+- Tools/web search: treat Brave `llm-context` grounding snippets as plain strings (fix empty arrays).
+- Tools/web search: recover OpenRouter Perplexity citation extraction from `message.annotations`.
+
+### New Config Keys
+- `channels.discord.guilds.<id>.channels.<id>.autoArchiveDuration` — auto-archive duration for auto-created threads (1h, 1d, 3d, 1w)
+- `memorySearch.extraPaths` — paths for multimodal image/audio indexing
+- `OPENCLAW_CLI` env var — set in child command environments
+
+### New Troubleshooting Entries
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| **BREAKING** Cron job no longer delivers to ad hoc targets (v2026.3.11) | Isolated cron delivery tightened — no fallback to agent sends or main-session summaries | Run `openclaw doctor --fix` to migrate cron jobs to explicit delivery targets |
+| Gateway rejects browser WebSocket in `trusted-proxy` mode (v2026.3.11) | Origin validation now enforced for browser connections (GHSA-5wcw-8jjv-m286) | Ensure browser origin matches allowed origins in gateway config |
+| Leaked `<\|...\|>` tokens in agent replies | GLM-5/DeepSeek model control tokens not stripped | Fixed in v2026.3.9+ — upgrade to v2026.3.9 or later |
+| Discord `maxLinesPerMessage` ignored | Config not resolved effectively for reply chunking | Fixed in v2026.3.10+ |
+| Kimi Coding tools broken | Tools sent in wrong format | Fixed in v2026.3.10+ — tools now sent in native Anthropic format |
+| Telegram long HTML messages truncated | Outbound HTML not chunked properly | Fixed in v2026.3.11 |
+| Signal config rejected with `accountUuid` | Strict validation didn't accept `channels.signal.accountUuid` | Fixed in v2026.3.11 |
+| Brave web search returns empty results | `llm-context` grounding snippets returned as empty arrays | Fixed in v2026.3.11 — treated as plain strings |
+
+---
+
+## What's New in v2026.3.2–3.7
+
+### Breaking Changes
+- **`tools.profile` default** (v2026.3.2): Now defaults to `messaging` for new local installs (was broad). Set `tools.profile: "coding"` to restore.
+- **ACP dispatch** (v2026.3.2): Now enabled by default. Set `acp.dispatch.enabled: false` to disable.
+- **Plugin HTTP registration** (v2026.3.2): `api.registerHttpHandler(...)` removed. Use `api.registerHttpRoute({ path, auth, match, handler })`.
+- **Zalo Personal** (v2026.3.2): No longer depends on external `zca` CLI. Run `openclaw channels login --channel zalouser` after upgrade.
+- **Gateway auth mode** (v2026.3.7): Explicit `gateway.auth.mode` required when both `token` and `password` are configured. Set to `"token"` or `"password"`.
+
+### New Features
+- **ContextEngine plugin** (v2026.3.7): Pluggable context management with lifecycle hooks (`bootstrap`, `ingest`, `assemble`, `compact`, `afterTurn`, `prepareSubagentSpawn`, `onSubagentEnded`). Config: `agents.defaults.contextEngine`.
+- **PDF tool** (v2026.3.2): First-class with Anthropic/Google provider support. Config: `agents.defaults.pdfModel`, `pdfMaxBytesMb`, `pdfMaxPages`.
+- **Session attachments** (v2026.3.2): Inline file attachments for `sessions_spawn`. Config: `tools.sessions_spawn.attachments`.
+- **Audio echo** (v2026.3.2): Pre-agent transcript confirmation. Config: `tools.media.audio.echoTranscript` + `echoFormat`.
+- **ACP persistent bindings** (v2026.3.7): Durable Discord/Telegram topic bindings that survive restarts.
+- **Telegram topic agent routing** (v2026.3.7): Per-topic `agentId` overrides for forum groups and DM topics.
+- **Telegram streaming default** (v2026.3.2): `channels.telegram.streaming` now defaults to `"partial"` with `sendMessageDraft` live preview.
+- **Config validation CLI** (v2026.3.7): `openclaw config validate [--json]` to check config before starting gateway.
+- **Compaction tuning**: `agents.defaults.compaction.postCompactionSections`, `recentTurnsPreserve`, `qualityGuard`.
+- **Custom provider headers**: `models.providers.<name>.headers` propagated across all resolution paths.
+- **Ollama improvements**: Custom headers, compaction/summarization support, memory embeddings (`memorySearch.provider: "ollama"`).
+- **Plugin SDK extensions**: `channelRuntime`, `runtime.stt.transcribeAudioFile()`, `runtime.system.requestHeartbeatNow()`, `runtime.events.onAgentEvent`, `runtime.events.onSessionTranscriptUpdate`.
+- **Plugin context injection**: `prependSystemContext` and `appendSystemContext` for static system prompt guidance.
+- **Hook lifecycle events**: `session:compact:before/after`, `message:transcribed`, `message:preprocessed`, `message:sent`, sessionKey in session events.
+- **Banner control**: `cli.banner.taglineMode` (`random` | `default` | `off`).
+- **OpenAI-compatible TTS**: `messages.tts.openai.baseUrl` config.
+- **MiniMax-M2.5-highspeed**: First-class support across catalogs.
+- **Google Gemini 3.1 Flash-Lite**: `google/gemini-3.1-flash-lite-preview`.
+- **Docker improvements**: Multi-stage builds, `OPENCLAW_VARIANT=slim`, `OPENCLAW_EXTENSIONS` for preinstalling deps, health checks.
+
+### New Troubleshooting Entries
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| **BREAKING** Gateway auth ambiguous (v2026.3.7) | Both token and password configured without mode | Set `gateway.auth.mode: "token"` or `"password"` |
+| **BREAKING** Tools profile too restrictive (v2026.3.2) | Default changed to `messaging` | Set `tools.profile: "coding"` for dev tools |
+| **BREAKING** ACP dispatch unexpected | Enabled by default in v2026.3.2 | Set `acp.dispatch.enabled: false` to disable |
+| Zalo Personal broken after upgrade | CLI dependency removed | Run `openclaw channels login --channel zalouser` |
+| Plugin HTTP handler "unknown route" | `registerHttpHandler` removed | Use `registerHttpRoute({ path, auth, match, handler })` |
+| Telegram streaming not working | Old `streaming: true` format | Use `streaming: "partial"` (new default) |
+| Telegram DM duplicate replies (v2026.3.8) | Both `agent:main:main` and `agent:main:telegram:direct:<id>` match | Fixed: DMs now deduped per agent, not per session key |
+| `system.run` script modified post-approval | Security: script rewrites after approval | v2026.3.8 pins approved scripts to on-disk snapshots; rewrites denied |
+| MS Teams group policy bypassed by route match | `groupPolicy: "allowlist"` ignored when route allowlist set | v2026.3.8 fix: sender allowlists enforced even with route allowlists |
+| Cron announce says `delivered: true` but no message sent | Text-only Telegram announce not routed through adapters | v2026.3.8 fix: routes through real outbound adapters |
+| Config validation: `tools: Unrecognized key: "webSearch"` | Wrong config path for web search | Use `tools.web.search.provider`, NOT `tools.webSearch`. Schema-validated. |
+| `tools.web.search.provider` rejects "tavily" | Tavily not a native provider in v2026.3.8 | Allowed: `brave`, `perplexity`, `grok`, `gemini`, `kimi`. For Tavily: install `openclaw-tavily` plugin via ClawHub, or wait for v2026.3.9+ |
+| `openclaw doctor --fix` removes custom config keys | Unrecognized keys are stripped by schema validation | Only use documented config paths. Check with `openclaw config set` first (it validates before writing). |
 
 ---
 
@@ -1237,68 +1796,100 @@ This skill grows with every use. Never let hard-won knowledge be lost.
 
 ## Version Check & Auto-Update Protocol
 
-**This skill was last updated for:** `v2026.3.1`
+**This skill was last updated for:** `v2026.4.27`
 
 ### Version Check (MANDATORY — run at start of every OpenClaw session)
 
-Before answering any OpenClaw question, Claude MUST check both installed AND registry versions:
+Before answering any OpenClaw question, Claude MUST run these two commands **in parallel**:
 
 ```bash
-# 1. Get installed version
-INSTALLED=$(openclaw --version 2>&1 | head -1)
+# Command 1: Get installed version
+openclaw --version 2>&1 | head -1
 
-# 2. Check latest available version from official registry
-LATEST=$(openclaw update status --json 2>&1 | python3 -c "import sys,json; print(json.load(sys.stdin).get('registry',{}).get('latestVersion','unknown'))" 2>/dev/null || echo "unknown")
-
-# 3. Check what this skill documents
-SKILL_VERSION="v2026.3.1"
+# Command 2: Get latest registry version + update availability
+openclaw update status --json 2>&1
 ```
 
-**Decision matrix:**
-- If `INSTALLED` matches `SKILL_VERSION` AND no newer `LATEST` → proceed normally
-- If `INSTALLED` is NEWER than `SKILL_VERSION` → trigger **Skill Refresh** (local update already happened)
-- If `LATEST` is NEWER than `INSTALLED` → inform user: "OpenClaw vX.X.X available. Update with `openclaw update --yes`"
-- If `LATEST` is NEWER than `SKILL_VERSION` AND `INSTALLED` matches `LATEST` → trigger **Skill Refresh** (user updated outside this session)
+From the JSON output, extract:
+- `INSTALLED` — the locally installed version (e.g. `2026.4.2`)
+- `LATEST` — `registry.latestVersion` from the JSON (e.g. `2026.4.5`)
+- `SKILL_VERSION` — the version in this section header above (e.g. `v2026.4.2`)
+
+### Decision Matrix
+
+Present the user a clear comparison table:
+
+```
+| Component      | Version    |
+|----------------|------------|
+| Installed      | vX.X.X     |
+| Latest (npm)   | vX.X.X     |
+| Skill synced   | vX.X.X     |
+```
+
+Then follow the appropriate path:
+
+**Path A — All in sync** (`INSTALLED` == `LATEST` == `SKILL_VERSION`):
+→ "Everything is up to date." Proceed normally.
+
+**Path B — Update available** (`LATEST` > `INSTALLED`):
+→ **Ask the user:** "OpenClaw vX.X.X is available (you have vX.X.X). Would you like to update?"
+- If **yes**: run `openclaw update --yes`, then proceed to **Skill Refresh** below.
+- If **no**: proceed normally with current version. Note the skill may not cover newer features.
+
+**Path C — Installed ahead of skill** (`INSTALLED` > `SKILL_VERSION`):
+→ OpenClaw was updated outside this session. Trigger **Skill Refresh** automatically.
+
+**Path D — Installed matches latest, but skill is behind** (`INSTALLED` == `LATEST` > `SKILL_VERSION`):
+→ Same as Path C — trigger **Skill Refresh** automatically.
 
 ### Skill Refresh Procedure
 
-When a newer OpenClaw version is detected (installed or available):
+When the local OpenClaw version is newer than `SKILL_VERSION`, sync the skill:
 
-1. **Notify the user:** "OpenClaw updated to vX.X.X — refreshing skill knowledge..."
+1. **Notify the user:** "Syncing skill to match OpenClaw vX.X.X..."
 
 2. **Regenerate `cli-reference.md`:**
    ```bash
    # Capture top-level help
    openclaw --help > /tmp/oc-help.txt
 
-   # For each command with subcommands (*), capture subcommand help too
-   for cmd in acp agents approvals browser channels config cron devices directory dns gateway hooks memory message models node nodes pairing plugins sandbox security skills system update webhooks; do
+   # For each command domain, capture subcommand help
+   for cmd in acp agents approvals browser channels config cron devices directory dns gateway hooks memory message models node nodes pairing plugins sandbox security skills system tasks update webhooks; do
+     echo -e "\n\n=== openclaw $cmd ===" >> /tmp/oc-help.txt
      openclaw $cmd --help >> /tmp/oc-help.txt 2>/dev/null
    done
    ```
-   Then write the formatted output to `~/.claude/skills/openclaw-configure/cli-reference.md`.
+   Write the formatted output to `~/.claude/skills/openclaw-configure/cli-reference.md`.
 
-3. **Update `commands.md`:**
-   - Update the version header line
-   - Add any new commands or flags discovered from the help output
-   - Remove any commands that no longer exist
-
-4. **Check the CHANGELOG:**
+3. **Read the CHANGELOG** for delta between old and new version:
    ```bash
-   # The changelog lives in the npm package directory
    CHANGELOG_PATH=$(dirname $(which openclaw))/../lib/node_modules/openclaw/CHANGELOG.md
-   # Read the section between the new version and the skill's old version
    ```
-   Use the changelog to identify:
-   - New features, channels, or providers to add to SKILL.md
+   Extract the section between the new version and `SKILL_VERSION`. Identify:
+   - New features, channels, or providers
    - Breaking changes or renamed commands
    - New config paths or options
    - Security changes
 
-5. **Update this SKILL.md:**
-   - Update `SKILL_VERSION` in the Version Check section above to the new version
-   - Add new features/channels/providers to appropriate sections
-   - Update troubleshooting table if needed
-   - Bump the `version:` in the YAML frontmatter
+4. **Update `commands.md`:**
+   - Update the version header line
+   - Add any new commands or flags from the help output
+   - Remove any commands that no longer exist
 
-6. **Confirm:** "Skill refreshed for vX.X.X. Ready."
+5. **Update this SKILL.md:**
+   - Update `SKILL_VERSION` in this section header to the new version
+   - Update `openclaw_version` in the YAML frontmatter to the new version
+   - Set `version:` in the YAML frontmatter to match the OpenClaw version (e.g. `2026.4.5`)
+   - Add new "What's New" section for the version range if there are notable changes
+   - Update troubleshooting table if changelog mentions new gotchas
+
+6. **Verify sync:** Confirm the three versions now match:
+   ```bash
+   # Installed version
+   openclaw --version 2>&1 | head -1
+   # Skill frontmatter
+   grep 'openclaw_version' ~/.claude/skills/openclaw-configure/SKILL.md
+   ```
+
+7. **Confirm to user:** "Skill synced to vX.X.X. Installed, registry, and skill are now aligned."
